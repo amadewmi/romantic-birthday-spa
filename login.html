@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>The Love Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh; margin: 0; padding: 24px; display: grid; place-items: center;
+      color: #fff8f0; font-family: Montserrat, sans-serif;
+      background: radial-gradient(circle at 50% 15%, #290a1e 0%, #1c0a15 48%, #12080d 100%);
+    }
+    .vault {
+      width: min(100%, 460px); padding: 38px 32px; text-align: center;
+      background: rgba(28, 12, 22, .78); border: 1px solid rgba(212, 175, 55, .34);
+      border-radius: 24px; box-shadow: 0 18px 48px rgba(0, 0, 0, .48), 0 0 32px rgba(212, 175, 55, .1);
+      backdrop-filter: blur(16px);
+    }
+    .heart { font-size: 2.5rem; filter: drop-shadow(0 0 14px rgba(255, 117, 143, .5)); }
+    h1 { margin: 8px 0; color: #f7e089; font: 700 clamp(2rem, 8vw, 2.6rem) 'Playfair Display', serif; }
+    .note { margin: 0 0 24px; color: #e0cfd6; line-height: 1.7; }
+    .step { margin: 18px 0 0; animation: arrive .5s cubic-bezier(.2, .8, .25, 1) both; }
+    .step-title { display: block; margin-bottom: 11px; color: #ffccd5; text-align: left; font-size: .9rem; }
+    .choices { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+    .choice {
+      margin: 0; padding: 10px 5px; border: 1px solid rgba(255, 204, 213, .2); border-radius: 13px;
+      color: #f9eaf0; background: rgba(18, 8, 13, .65); font: 500 .72rem Montserrat, sans-serif;
+      cursor: pointer; transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+    .choice:hover { transform: translateY(-2px); border-color: rgba(247, 224, 137, .65); }
+    .choice[aria-pressed="true"] { border-color: #f7e089; background: rgba(212, 175, 55, .14); box-shadow: 0 0 16px rgba(212, 175, 55, .17); }
+    .swatch { display: block; width: 25px; height: 25px; margin: 0 auto 7px; border: 2px solid rgba(255,255,255,.72); border-radius: 50%; box-shadow: 0 0 12px color-mix(in srgb, var(--swatch) 52%, transparent); background: var(--swatch); }
+    .dates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+    .date-choice { padding: 13px 5px; font-size: .8rem; }
+    .date-choice span { display: block; margin-top: 4px; color: #d8c4ce; font-size: .68rem; }
+    .clue-line { min-height: 22px; margin: 8px 0 0; color: #d8c4ce; font-size: .76rem; line-height: 1.5; text-align: left; }
+    .hint-toggle {
+      width: auto; margin: 12px 0 0; padding: 8px 12px; border: 1px dashed rgba(255, 179, 193, .55);
+      border-radius: 20px; color: #ffccd5; background: transparent; font: 500 .82rem Montserrat, sans-serif; cursor: pointer;
+    }
+    .hint-toggle:hover { background: rgba(255, 204, 213, .08); }
+    .puzzle-hints { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; text-align: left; }
+    .puzzle-hints[hidden], [hidden] { display: none !important; }
+    .puzzle-hints li { padding: 11px 13px; border: 1px solid rgba(212, 175, 55, .2); border-radius: 11px; color: #ffe8c5; background: rgba(41, 10, 30, .55); font-size: .82rem; line-height: 1.55; animation: arrive .4s ease both; }
+    .unlock {
+      width: 100%; margin-top: 20px; padding: 15px; border: 0; border-radius: 13px;
+      color: #2a101a; background: linear-gradient(135deg, #f7e089, #d4af37);
+      font: 600 1rem Montserrat, sans-serif; cursor: pointer; transition: transform .2s ease, opacity .2s ease;
+    }
+    .unlock:hover:not(:disabled) { transform: translateY(-2px); }
+    .unlock:disabled { opacity: .65; cursor: wait; }
+    #message { min-height: 24px; margin: 13px 0 0; color: #ffb3c1; font-size: .86rem; line-height: 1.5; }
+    .answer-shake { animation: shake .38s ease; }
+    @keyframes arrive { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+    .signature { margin-top: 18px; color: #ffccd5; font: 1.9rem 'Great Vibes', cursive; }
+    @media (max-width: 420px) { .vault { padding: 30px 20px; } .choices { gap: 6px; } .choice { font-size: .66rem; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+  <main class="vault">
+    <div class="heart" aria-hidden="true">♡</div>
+    <h1>The Love Vault</h1>
+    <p class="note">Two little memories are waiting to be found. Choose what feels like us, and let the story open. 💗</p>
+    <form id="login-form">
+      <section class="step" aria-labelledby="color-title">
+        <span class="step-title" id="color-title">First, find the colour that belongs to my heart</span>
+        <div class="choices" id="color-choices" role="group" aria-label="Choose a colour">
+          <button class="choice" type="button" data-color="rose" aria-pressed="false"><i class="swatch" style="--swatch:#e95f91"></i>Rose</button>
+          <button class="choice" type="button" data-color="blue" aria-pressed="false"><i class="swatch" style="--swatch:#6ea9e8"></i>Blue</button>
+          <button class="choice" type="button" data-color="purple" aria-pressed="false"><i class="swatch" style="--swatch:#a57be8"></i>Purple</button>
+          <button class="choice" type="button" data-color="gold" aria-pressed="false"><i class="swatch" style="--swatch:#e2ba4b"></i>Gold</button>
+          <button class="choice" type="button" data-color="green" aria-pressed="false"><i class="swatch" style="--swatch:#78b894"></i>Green</button>
+        </div>
+        <p class="clue-line" id="color-feedback" aria-live="polite"></p>
+      </section>
+      <section class="step" id="date-step" aria-labelledby="date-title" hidden>
+        <span class="step-title" id="date-title">Now, find the day the sea became part of our story</span>
+        <div class="dates" id="date-choices" role="group" aria-label="Choose the date of our beach day">
+          <button class="choice date-choice" type="button" data-date="september18" aria-pressed="false">September 18</button>
+          <button class="choice date-choice" type="button" data-date="october08" aria-pressed="false">October 08</button>
+          <button class="choice date-choice" type="button" data-date="november05" aria-pressed="false">November 05</button>
+        </div>
+        <p class="clue-line" id="date-feedback" aria-live="polite"></p>
+      </section>
+      <button id="hint-toggle" class="hint-toggle" type="button">A little nudge? 💡</button>
+      <ol id="puzzle-hints" class="puzzle-hints" aria-live="polite" hidden></ol>
+      <button id="submit-button" class="unlock" type="submit" disabled>Unlock Our Story&nbsp; ♡</button>
+      <p id="message" role="status" aria-live="polite"></p>
+    </form>
+    <div class="signature">Forever, with love</div>
+  </main>
+  <script>
+    const form = document.getElementById('login-form');
+    const submitButton = document.getElementById('submit-button');
+    const message = document.getElementById('message');
+    const dateStep = document.getElementById('date-step');
+    const colorFeedback = document.getElementById('color-feedback');
+    const dateFeedback = document.getElementById('date-feedback');
+    const hintButton = document.getElementById('hint-toggle');
+    const hintsList = document.getElementById('puzzle-hints');
+    const hints = [
+      'One answer is a colour that makes you think of yourself.',
+      'The other memory happened with sand beneath our feet and the sea nearby.'
+    ];
+    let selectedColor = '';
+    let selectedDate = '';
+    let hintsShown = 0;
+
+    document.querySelectorAll('[data-color]').forEach(option => option.addEventListener('click', () => {
+      selectedColor = option.dataset.color;
+      document.querySelectorAll('[data-color]').forEach(item => item.setAttribute('aria-pressed', String(item === option)));
+      colorFeedback.textContent = 'A lovely choice… one more memory to find. ✨';
+      dateStep.hidden = false;
+    }));
+
+    document.querySelectorAll('[data-date]').forEach(option => option.addEventListener('click', () => {
+      selectedDate = option.dataset.date;
+      document.querySelectorAll('[data-date]').forEach(item => item.setAttribute('aria-pressed', String(item === option)));
+      dateFeedback.textContent = 'Two little memories, found together. 💗';
+      submitButton.disabled = false;
+    }));
+
+    hintButton.addEventListener('click', () => {
+      if (hintsShown >= hints.length) return;
+      const hint = document.createElement('li');
+      hint.textContent = hints[hintsShown++];
+      hintsList.appendChild(hint);
+      hintsList.hidden = false;
+      hintButton.textContent = hintsShown < hints.length ? 'One more nudge? 💡' : 'Keep following your heart 💗';
+      hintButton.disabled = hintsShown >= hints.length;
+    });
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!selectedColor || !selectedDate) return;
+      submitButton.disabled = true;
+      hintButton.disabled = true;
+      message.textContent = 'Opening our little world…';
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answer: `${selectedColor}${selectedDate}` })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Please try again.');
+        sessionStorage.setItem('loveVaultJustUnlocked', 'yes');
+        window.location.replace('/');
+      } catch (error) {
+        message.textContent = error.message === 'Failed to fetch'
+          ? 'The private entrance is not ready yet. Please try again in a moment.'
+          : error.message;
+        submitButton.disabled = false;
+        hintButton.disabled = hintsShown >= hints.length;
+        form.classList.remove('answer-shake');
+        void form.offsetWidth;
+        form.classList.add('answer-shake');
+        setTimeout(() => form.classList.remove('answer-shake'), 400);
+      }
+    });
+  </script>
+</body>
+</html>
