@@ -1,6 +1,6 @@
 # 🌹 Romantic Birthday Surprise SPA for Shaalu (My Love)
 
-An interactive, responsive single-page web application (SPA) crafted with endless love as an unforgettable birthday surprise. Built with modern HTML5, CSS3, and ES6 JavaScript, packaged with a clean local `assets/` structure and ready for hosting on Vercel, Netlify, or GitHub Pages.
+An interactive, responsive single-page web application (SPA) crafted with endless love as an unforgettable birthday surprise. Built with modern HTML5, CSS3, and ES6 JavaScript, with authenticated Vercel hosting and Cloudinary CDN video delivery.
 
 ---
 
@@ -41,9 +41,12 @@ An interactive, responsive single-page web application (SPA) crafted with endles
    - Completion trophy and badge for 100% Soulmate Score.
    - **Audio Resume**: Leaving Page 6 smoothly fades out the Birthday song and resumes "Perfect" from the exact paused second with a smooth fade-in!
 
-8. **Living Memories Video Section (Page 8: Moments In Motion):**
-   - Gold-framed luxury HTML5 video player for `assets/video/our-video.mp4`.
-   - **Automatic Smart Audio Ducking**: When the video is played, the background music volume automatically fades down to a soft whisper, making the video's sound stand out clearly! When the video pauses or ends, the background music smoothly restores to normal volume.
+8. **Cloudinary Video Journey (Timeline, Gallery, Pages 8 and 9):**
+   - Seven CDN-hosted videos share one centralized configuration in `assets/js/media-config.js`.
+   - Cloudinary `f_auto,q_auto` delivery URLs and `so_0,f_auto,q_auto` JPG posters are generated automatically.
+   - A custom gold/burgundy player supplies poster previews, play/pause, seeking, time, mute, fullscreen, and buffering feedback.
+   - **Smart staged loading:** only the active viewport video is loaded first; the next journey video and next video page are prefetched sequentially after useful buffering.
+   - **Automatic audio hand-off:** background music fades and pauses while a video plays, then resumes smoothly after pause or completion when the listener had music enabled.
    - Romantic Sinhala dedication and loving promise signed by **MANIKA 💌**.
 
 9. **Grand Finale (Page 9: Love You Forever):**
@@ -74,6 +77,7 @@ romantic-birthday-spa/
 ├── package-lock.json     # Locked dependency versions
 ├── README.md             # Project documentation
 ├── vercel.json           # Vercel deployment config
+├── CLOUDINARY_SETUP_GUIDE.md # Beginner-friendly Sinhala setup manual
 │
 └── assets/
     ├── README.txt        # Media files guide
@@ -82,8 +86,9 @@ romantic-birthday-spa/
     │   ├── aud2.mp3      # Birthday Celebration Song (Page 6)
     │   ├── perfect.mp3   # Compatibility alias for aud1
     │   └── birthday.mp3  # Compatibility alias for aud2
-    ├── video/
-    │   └── our-video.mp4 # Video clip for Page 8
+    ├── js/
+    │   ├── media-config.js       # All seven Cloudinary URLs and poster helpers
+    │   └── video-experience.js   # Luxury player and staged loading queue
     └── images/           # Photos for timeline & polaroids
 ```
 
@@ -103,4 +108,8 @@ Before deploying, add these environment variables to the Vercel project (Setting
 
 Add both variables to Production, Preview, and Development if those environments will be used, then redeploy. Keep the values out of GitHub and never put them in `index.html`. For local Vercel development, use an ignored `.env.local` file; `.env.example` contains names only. The hints point toward the memories without stating their answers, but this remains a playful puzzle entrance rather than strong protection from someone who deliberately inspects the site.
 
-The videos are stored with Git LFS. After importing the GitHub repository into Vercel, enable Git LFS in the project's Settings → Git and redeploy so Vercel downloads the actual video files. Keep `cleanUrls` disabled: the login middleware intentionally exposes `/login.html`, and Vercel's clean URL redirect would change that path.
+## 🎥 Cloudinary Video Setup
+
+Local MP4 files and the Git LFS rule have been removed. Upload the seven source videos to Cloudinary, then paste their original secure delivery URLs into `assets/js/media-config.js`. Do not add `f_auto`, `q_auto`, or poster transformations manually; the helper functions add them consistently. Full beginner steps and the filename-to-config mapping are in `CLOUDINARY_SETUP_GUIDE.md`.
+
+Keep `cleanUrls` disabled: the login middleware intentionally exposes `/login.html`, and Vercel's clean URL redirect would change that path.

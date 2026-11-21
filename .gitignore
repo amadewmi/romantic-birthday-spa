@@ -11,3 +11,6 @@ node_modules/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Keep large source videos out of Git; upload them to Cloudinary instead.
+/assets/video/*.mp4

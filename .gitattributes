@@ -1,1 +1,1 @@
-*.mp4 filter=lfs diff=lfs merge=lfs -text
+# Videos are delivered by Cloudinary. No media files are tracked with Git LFS.

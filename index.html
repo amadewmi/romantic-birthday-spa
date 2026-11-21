@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Great+Vibes&family=Dancing+Script:wght@500;700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Noto+Sans+Sinhala:wght@400;500;600;700&family=Noto+Serif+Sinhala:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="assets/audio/aud1.mp3" as="audio" type="audio/mpeg" fetchpriority="high">
 
   <!-- Canvas Confetti CDN -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -44,12 +45,31 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    *::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+      display: none;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     html, body {
       width: 100%;
       min-height: 100%;
-      overflow-x: hidden;
       background: radial-gradient(circle at 50% 15%, var(--bg-dark-3) 0%, var(--bg-dark-2) 45%, var(--bg-dark-1) 100%);
       color: var(--text-light);
       font-family: 'Montserrat', 'Noto Sans Sinhala', sans-serif;
@@ -57,9 +77,16 @@
       line-height: 1.6;
     }
 
+    html {
+      overflow-x: clip;
+      overflow-y: auto;
+    }
+
     body {
       position: relative;
       min-height: 100vh;
+      overflow-x: clip;
+      overflow-y: visible;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -321,6 +348,17 @@
       animation: spinVinyl 3.5s linear infinite;
     }
 
+    .music-widget.needs-gesture {
+      border-color: var(--accent-gold);
+      box-shadow: 0 8px 28px rgba(212, 175, 55, 0.34);
+      animation: musicPromptPulse 1.8s ease-in-out infinite;
+    }
+
+    @keyframes musicPromptPulse {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
     @keyframes spinVinyl {
       100% { transform: rotate(360deg); }
     }
@@ -400,6 +438,11 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+
+    .page:not(.active):not(.fade-out) {
+      max-height: 0;
+      overflow: hidden;
     }
 
     .page.active {
@@ -2042,7 +2085,7 @@
     }
 
     /* ==========================================================================
-       13. PAGE 9: VIDEO MEMORY SECTION ("OUR MOMENTS IN MOTION")
+       13. CLOUDINARY-POWERED LUXURY VIDEO EXPERIENCE
        ========================================================================== */
     .video-container {
       max-width: 860px;
@@ -2065,16 +2108,322 @@
       width: 100%;
       border-radius: 16px;
       overflow: hidden;
-      background: #000;
-      border: 2px solid rgba(212, 175, 55, 0.35);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 25px rgba(212, 175, 55, 0.2);
+      background: #090509;
     }
-    .video-player-wrapper video {
+
+    .luxury-video-player {
+      --video-progress: 0%;
+      position: relative;
       width: 100%;
-      max-height: 480px;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      isolation: isolate;
+      border: 1px solid rgba(247, 224, 137, 0.45);
+      border-radius: 16px;
+      color: #fff8f0;
+      background:
+        radial-gradient(circle at 50% 35%, rgba(89, 13, 34, 0.58), rgba(9, 5, 9, 0.96) 68%),
+        #090509;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.72), 0 0 28px rgba(212, 175, 55, 0.18);
+    }
+
+    .luxury-video-player::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px rgba(255, 248, 240, 0.08), inset 0 0 28px rgba(212, 175, 55, 0.08);
+    }
+
+    .luxury-video-player video {
+      width: 100%;
+      height: 100%;
       display: block;
+      object-fit: contain;
+      background: #090509;
       outline: none;
     }
+
+    .video-poster-shade {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 1;
+      background: linear-gradient(180deg, rgba(9, 5, 9, 0.08) 35%, rgba(9, 5, 9, 0.9) 100%);
+      transition: opacity 280ms ease;
+    }
+
+    .luxury-video-player.is-playing .video-poster-shade { opacity: 0; }
+
+    .video-center-play {
+      position: absolute;
+      z-index: 3;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: grid;
+      justify-items: center;
+      gap: 9px;
+      padding: 0;
+      border: 0;
+      color: #fff8f0;
+      background: transparent;
+      cursor: pointer;
+      transition: opacity 220ms ease, transform 260ms cubic-bezier(0.2, 0.75, 0.25, 1);
+    }
+
+    .video-center-play:hover { transform: translate(-50%, -50%) scale(1.06); }
+    .luxury-video-player.is-playing .video-center-play { opacity: 0; pointer-events: none; }
+
+    .video-center-play-icon {
+      width: clamp(60px, 10vw, 82px);
+      height: clamp(60px, 10vw, 82px);
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(247, 224, 137, 0.8);
+      border-radius: 50%;
+      background: linear-gradient(145deg, rgba(89, 13, 34, 0.9), rgba(28, 10, 21, 0.82));
+      backdrop-filter: blur(12px);
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55), 0 0 28px rgba(212, 175, 55, 0.38);
+    }
+
+    .video-center-play-icon svg {
+      width: 34%;
+      height: 34%;
+      fill: var(--accent-gold-light);
+      filter: drop-shadow(0 0 8px rgba(247, 224, 137, 0.46));
+    }
+
+    .video-center-play-label {
+      font-size: 0.76rem;
+      font-weight: 600;
+      letter-spacing: 1.7px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+    }
+
+    .video-control-bar {
+      position: absolute;
+      z-index: 5;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: auto auto minmax(80px, 1fr) auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 28px 14px 12px;
+      background: linear-gradient(180deg, transparent, rgba(9, 5, 9, 0.94));
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    .video-control-bar[hidden],
+    .luxury-video-player.is-unconfigured .video-center-play,
+    .luxury-video-player.is-unconfigured .video-control-bar {
+      display: none;
+    }
+
+    .luxury-video-player:hover .video-control-bar,
+    .luxury-video-player:focus-within .video-control-bar,
+    .luxury-video-player:not(.is-playing) .video-control-bar {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .video-control-button {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid rgba(247, 224, 137, 0.28);
+      border-radius: 50%;
+      color: var(--accent-gold-light);
+      background: rgba(18, 8, 13, 0.62);
+      cursor: pointer;
+      transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+    }
+
+    .video-control-button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(247, 224, 137, 0.7);
+      background: rgba(89, 13, 34, 0.74);
+    }
+
+    .video-control-button:disabled {
+      cursor: default;
+      opacity: 0.78;
+    }
+
+    .video-control-button svg { width: 18px; height: 18px; fill: currentColor; }
+
+    .video-time {
+      min-width: 84px;
+      color: #fff8f0;
+      font-size: 0.72rem;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+    }
+
+    .video-seek-label { display: flex; align-items: center; min-width: 0; }
+
+    .video-seek {
+      width: 100%;
+      height: 18px;
+      margin: 0;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+    }
+
+    .video-seek::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent-gold) var(--video-progress), rgba(255, 255, 255, 0.24) var(--video-progress));
+    }
+
+    .video-seek::-moz-range-track {
+      height: 4px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.24);
+    }
+
+    .video-seek::-moz-range-progress {
+      height: 4px;
+      border-radius: 99px;
+      background: var(--accent-gold);
+    }
+
+    .video-seek::-webkit-slider-thumb {
+      width: 14px;
+      height: 14px;
+      margin-top: -5px;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 2px solid #fff8f0;
+      border-radius: 50%;
+      background: var(--accent-gold);
+      box-shadow: 0 0 9px rgba(212, 175, 55, 0.55);
+    }
+
+    .video-seek::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border: 2px solid #fff8f0;
+      border-radius: 50%;
+      background: var(--accent-gold);
+      box-shadow: 0 0 9px rgba(212, 175, 55, 0.55);
+    }
+
+    .video-buffering {
+      position: absolute;
+      z-index: 6;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      background: rgba(9, 5, 9, 0.2);
+    }
+
+    .video-buffering[hidden] { display: none; }
+
+    .video-buffering span {
+      width: 46px;
+      height: 46px;
+      border: 3px solid rgba(255, 255, 255, 0.18);
+      border-top-color: var(--accent-gold-light);
+      border-radius: 50%;
+      animation: videoBufferSpin 800ms linear infinite;
+      box-shadow: 0 0 18px rgba(212, 175, 55, 0.18);
+    }
+
+    @keyframes videoBufferSpin { to { transform: rotate(360deg); } }
+
+    .video-config-notice {
+      position: absolute;
+      z-index: 3;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 24px;
+      text-align: center;
+      color: var(--rose-blush);
+      background: radial-gradient(circle at center, rgba(89, 13, 34, 0.52), rgba(9, 5, 9, 0.88));
+    }
+
+    .video-config-notice[hidden] { display: none; }
+    .video-config-notice strong { color: var(--accent-gold-light); font-family: 'Playfair Display', serif; font-size: 1.05rem; }
+    .video-config-notice span { color: var(--text-muted); font-size: 0.78rem; }
+    .video-config-notice code { color: #fff8f0; }
+
+    .milestone-video-frame .luxury-video-player {
+      max-height: 70vh;
+      border: 0;
+      border-radius: 11px;
+      box-shadow: none;
+    }
+
+    .polaroid-media-grid .luxury-video-player {
+      width: 100%;
+      height: 100%;
+      min-width: 0;
+      min-height: 0;
+      aspect-ratio: auto;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .polaroid-media-grid .video-center-play-label,
+    .polaroid-media-grid .video-time,
+    .polaroid-media-grid .video-seek-label,
+    .polaroid-media-grid [data-video-action="fullscreen"] { display: none; }
+
+    .polaroid-media-grid .video-control-bar {
+      grid-template-columns: auto auto;
+      justify-content: center;
+      padding: 18px 8px 7px;
+      gap: 8px;
+    }
+
+    .polaroid-media-grid .video-control-button { width: 32px; height: 32px; }
+    .polaroid-media-grid .video-center-play-icon { width: 52px; height: 52px; }
+    .polaroid-media-grid .video-config-notice { padding: 8px; }
+    .polaroid-media-grid .video-config-notice strong { font-size: 0.72rem; }
+    .polaroid-media-grid .video-config-notice span { display: none; }
+
+    .luxury-video-player:fullscreen {
+      width: 100vw;
+      height: 100vh;
+      border: 0;
+      border-radius: 0;
+      background: #000;
+    }
+
+    @media (max-width: 600px) {
+      .video-card { padding: 12px; }
+      .video-control-bar { grid-template-columns: auto minmax(74px, 1fr) auto auto; gap: 7px; padding: 24px 9px 8px; }
+      .video-time { display: none; }
+      .video-control-button { width: 36px; height: 36px; }
+      .video-center-play-label { display: none; }
+      .video-config-notice strong { font-size: 0.92rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .video-buffering span { animation-duration: 1.6s; }
+      .video-center-play, .video-control-bar { transition: none; }
+    }
+
     .video-caption-box {
       margin-top: 24px;
       padding: 20px 24px;
@@ -2432,18 +2781,12 @@
 
   <!-- Main Background Music (Ed Sheeran - Perfect with aud1 and fallback) -->
   <audio id="bg-music" preload="auto">
-    <source src="assets/audio/aud1.mp3" type="audio/mp3">
-    <source src="assets/audio/aud1" type="audio/mp3">
-    <source src="assets/audio/perfect.mp3" type="audio/mp3">
-    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-piano-112199.mp3" type="audio/mp3">
+    <source src="assets/audio/aud1.mp3" type="audio/mpeg">
   </audio>
 
   <!-- Birthday Celebration Song (Happy Birthday Song from aud2 with fallback) -->
-  <audio id="birthday-music" loop preload="auto">
-    <source src="assets/audio/aud2.mp3" type="audio/mp3">
-    <source src="assets/audio/aud2" type="audio/mp3">
-    <source src="assets/audio/birthday.mp3" type="audio/mp3">
-    <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_73e7c81d28.mp3?filename=happy-birthday-orchestra-10729.mp3" type="audio/mp3">
+  <audio id="birthday-music" loop preload="none">
+    <source src="assets/audio/aud2.mp3" type="audio/mpeg">
   </audio>
 
   <!-- ==========================================================================
@@ -2855,10 +3198,7 @@
 
         <div class="video-card favorite-moment-card">
           <div class="video-player-wrapper">
-            <video class="muted-autoplay-video" controls muted playsinline preload="metadata" aria-label="My favorite beautiful moment spent with you">
-              <source src="assets/video/4.mp4.mp4" type="video/mp4">
-              Your browser does not support the video tag.
-            </video>
+            <div id="favorite-video-slot"></div>
           </div>
           <div class="video-caption-box font-script favorite-moment-caption">
             “If I could keep one little moment in my heart forever, I’d choose this one—with you, just as we are. 💞”
@@ -2889,11 +3229,7 @@
 
         <div class="video-card">
           <div class="video-player-wrapper">
-            <video id="romantic-video" controls muted playsinline preload="metadata" poster="https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&q=80">
-              <source src="assets/video/our-video.mp4" type="video/mp4">
-              <source src="assets/video/our-video.mp4.mp4" type="video/mp4">
-              Your browser does not support the video tag.
-            </video>
+            <div id="living-memories-video-slot"></div>
           </div>
 
           <div class="video-caption-box font-sinhala">
@@ -3035,6 +3371,8 @@
   <!-- ==========================================================================
        CLIENT-SIDE CONFIGURATION & APPLICATION LOGIC
        ========================================================================== -->
+  <script src="assets/js/media-config.js"></script>
+  <script src="assets/js/video-experience.js"></script>
   <script>
     /* ==========================================================================
        EASY USER CONFIGURATION
@@ -3064,32 +3402,32 @@
           date: "August 21, 2026",
           title: "The Day We Met for the First Time",
           desc: "ඒ පළමු හමුවීමේ පුංචි හිනාවත්, හිතට දැනුණු අමුතුම සතුටත් අදටත් මතකයි. ඒ දවසෙන් පටන්ගත්ත අපේ ලස්සන කතාවේ පළමු පිටුව මෙන්න. 💕",
-          videos: ["assets/video/1.mp4.mp4"]
+          videoKeys: ["firstMeeting"]
         },
         {
           date: "September 18, 2026",
           title: "Our Second Day Together",
           desc: "දෙවැනි හමුවීමේදී අපි අතර තිබුණු හුරුපුරුදුකම තවත් ලස්සන වුණා. ඔයා ළඟ ගත කළ ඒ මොහොත, තවත් හමුවීම් ගොඩකට හිත ආස කළා. 🌷",
-          videos: ["assets/video/2.mp4.mp4"]
+          videoKeys: ["secondMeeting"]
         },
         {
           date: "October 08, 2026",
           title: "Beach Day — Our Third Meeting",
           desc: "මුහුදු හුළඟ, රළ හඬ, ඒ හැමදේටම වඩා ඔයා එක්ක ගත කළ වෙලාව… අපේ තුන්වැනි හමුවීම හිතේ සදාකාලිකවම රැඳුණු beach day එකක්. 🌊☀️",
-          videos: ["assets/video/3.mp4.mp4"]
+          videoKeys: ["beachDay"]
         },
         {
           date: "November 05, 2026",
           title: "Our Fourth Day Together",
           desc: "හතරවැනි වතාවටත් ඔයාව හමුවුණු ඒ දවසේ, සරලම මොහොතක් වුණත් ඔයා නිසා විශේෂ මතකයක් වුණා. තව තවත් ලස්සන දවස්වලට ආසාවෙන්… ❤️",
-          videos: ["assets/video/5.mp4.mp4"]
+          videoKeys: ["fourthMeeting"]
         },
         {
           date: "November 14, 2026",
           title: "An Unforgettable Day — You Came Home",
           desc: "ඔයා අපේ ගෙදරට ආපු ඒ දවස මට අමතක වෙන්නේ නැහැ. ඔයා ආවම ගෙදරත් හිතත් සතුටින් පිරුණා; මේ පුංචි photo එක ඒ ආදරණීය මතකය හැමදාටම රැකගන්නවා. 🏡💖",
           image: "assets/images/1.jpg.jpg",
-          videos: []
+          videoKeys: []
         }
       ],
 
@@ -3125,7 +3463,7 @@
           caption: "You Stole My Heart Again",
           date: "A little moment on repeat",
           desc: "One look from you and my heart forgets how to behave. Somehow, you keep making me fall for you all over again.",
-          media: [{ type: "video", url: "assets/video/6.mp4.mp4" }]
+          media: [{ type: "video", key: "heartStealer" }]
         },
         {
           id: 5,
@@ -3217,11 +3555,21 @@ MANIKA ආදරෙන් 💌💞`,
           correct: 0,
           explanation: "හරිම හරි! මං ආසම පාට purple තමයි. 💜✨"
         }
-      ],
-
-      // 10. Video Section (Page 8)
-      videoUrl: "assets/video/our-video.mp4"
+      ]
     };
+
+    document.getElementById('favorite-video-slot').innerHTML =
+      RomanticVideoExperience.createPlayerMarkup({
+        key: 'favoriteMoment',
+        page: 8,
+        label: 'My favorite beautiful moment spent with you'
+      });
+    document.getElementById('living-memories-video-slot').innerHTML =
+      RomanticVideoExperience.createPlayerMarkup({
+        key: 'livingMemories',
+        page: 9,
+        label: 'Our living memories'
+      });
 
     /* ==========================================================================
        SYNTHESIZED WEB AUDIO API SOUND ENGINE (ZERO DEPENDENCY CHIMES & MUSIC)
@@ -3369,9 +3717,8 @@ MANIKA ආදරෙන් 💌💞`,
     bgMusicLoop.removeAttribute('id');
     bgMusicLoop.hidden = true;
     bgMusicLoop.volume = 0;
-    bgMusicLoop.preload = 'auto';
+    bgMusicLoop.preload = 'none';
     document.body.appendChild(bgMusicLoop);
-    bgMusicLoop.load();
     const birthdayMusic = document.getElementById('birthday-music');
     const musicWidget = document.getElementById('music-widget');
     const musicStatusText = document.getElementById('music-status-text');
@@ -3383,6 +3730,17 @@ MANIKA ආදරෙන් 💌💞`,
     let bgLoopTransition = null;
     let bgLoopPreparing = false;
     let bgLoopRequestId = 0;
+    let bgLoopBufferPrimed = false;
+    let videoMusicResumeState = null;
+
+    function primeBackgroundLoopBuffer() {
+      if (bgLoopBufferPrimed) return;
+      bgLoopBufferPrimed = true;
+      bgMusicLoop.preload = 'auto';
+      bgMusicLoop.load();
+    }
+
+    bgMusic.addEventListener('canplaythrough', primeBackgroundLoopBuffer, { once: true });
 
     function settleBgLoopTransition() {
       bgLoopRequestId++;
@@ -3446,6 +3804,7 @@ MANIKA ආදරෙන් 💌💞`,
       const requestId = ++bgLoopRequestId;
       bgLoopPreparing = true;
       incoming.volume = 0;
+      primeBackgroundLoopBuffer();
 
       const beginIncoming = () => {
         if (requestId !== bgLoopRequestId || outgoing !== bgMusic || outgoing.paused || bgLoopTransition) {
@@ -3528,6 +3887,7 @@ MANIKA ආදරෙන් 💌💞`,
     function startPerfectMusicWithFade(fadeDuration = 2000) {
       soundEngine.init();
       settleBgLoopTransition();
+      if (bgMusic.networkState === HTMLMediaElement.NETWORK_EMPTY) bgMusic.load();
       if (!hasPerfectStarted) {
         bgMusic.currentTime = CONFIG.perfectStartTime || 52;
         hasPerfectStarted = true;
@@ -3538,7 +3898,8 @@ MANIKA ආදරෙන් 💌💞`,
         return fadeAudio(bgMusic, 0.75, fadeDuration);
       }).catch(err => {
         console.warn("HTML5 audio playback notice:", err);
-        setMusicUIPlaying(false, "Tap to Play ♫");
+        setMusicUIPlaying(false, "Tap to start Our Song ♫");
+        musicWidget.classList.add('needs-gesture');
       });
     }
 
@@ -3548,7 +3909,24 @@ MANIKA ආදරෙන් 💌💞`,
       const activeAudio = (currentPage === 6) ? birthdayMusic : bgMusic;
       const trackName = (currentPage === 6) ? "Happy Birthday Song 🎂" : "Ed Sheeran - Perfect ♫";
 
+      if (window.videoExperience?.isVideoPlaying()) {
+        if (!videoMusicResumeState) {
+          videoMusicResumeState = { audio: activeAudio, shouldResume: false, targetVolume: 0.75 };
+        }
+        videoMusicResumeState.shouldResume = !videoMusicResumeState.shouldResume;
+        isMusicPlaying = videoMusicResumeState.shouldResume;
+        musicWidget.classList.remove('playing', 'needs-gesture');
+        musicStatusText.textContent = videoMusicResumeState.shouldResume
+          ? 'Music resumes after video ♫'
+          : 'Music paused';
+        return;
+      }
+
       if (!isMusicPlaying) {
+        if (activeAudio === birthdayMusic && activeAudio.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+          activeAudio.preload = 'auto';
+          activeAudio.load();
+        }
         activeAudio.play().then(() => {
           fadeAudio(activeAudio, 0.75, 800);
           setMusicUIPlaying(true, trackName);
@@ -3567,6 +3945,7 @@ MANIKA ආදරෙන් 💌💞`,
 
     function setMusicUIPlaying(playing, label = null) {
       isMusicPlaying = playing;
+      musicWidget.classList.remove('needs-gesture');
       if (playing) {
         musicWidget.classList.add('playing');
         musicStatusText.textContent = label || "Now Playing ♫";
@@ -3574,6 +3953,48 @@ MANIKA ආදරෙන් 💌💞`,
         musicWidget.classList.remove('playing');
         musicStatusText.textContent = label || "Click to Play";
       }
+    }
+
+    let videoAudioHandoffId = 0;
+
+    function pauseMusicForVideo() {
+      settleBgLoopTransition();
+      const activeAudio = currentPage === 6 ? birthdayMusic : bgMusic;
+      const shouldResume = isMusicPlaying && activeAudio && !activeAudio.paused;
+      const handoffId = ++videoAudioHandoffId;
+      videoMusicResumeState = {
+        id: handoffId,
+        audio: activeAudio,
+        shouldResume,
+        targetVolume: Math.max(activeAudio?.volume || 0, 0.75)
+      };
+
+      if (!shouldResume) return;
+      musicWidget.classList.remove('playing');
+      musicStatusText.textContent = 'Paused for your video ♫';
+      fadeAudio(activeAudio, 0, 520).then(() => {
+        if (videoMusicResumeState?.id !== handoffId || !window.videoExperience?.isVideoPlaying()) return;
+        activeAudio.pause();
+      });
+    }
+
+    function resumeMusicAfterVideo() {
+      const resumeState = videoMusicResumeState;
+      videoMusicResumeState = null;
+      videoAudioHandoffId++;
+      if (!resumeState?.shouldResume || !resumeState.audio) return;
+
+      const audio = resumeState.audio;
+      audio.volume = 0;
+      audio.play().then(() => {
+        const label = audio === birthdayMusic ? 'Happy Birthday Song 🎂' : 'Ed Sheeran - Perfect ♫';
+        setMusicUIPlaying(true, label);
+        fadeAudio(audio, resumeState.targetVolume, 950);
+      }).catch(error => {
+        console.warn('Music resume notice:', error);
+        setMusicUIPlaying(false, 'Tap to resume Our Song ♫');
+        musicWidget.classList.add('needs-gesture');
+      });
     }
 
     musicWidget.addEventListener('click', toggleMusic);
@@ -3772,10 +4193,15 @@ MANIKA ආදරෙන් 💌💞`,
         stopMicrophone();
       }
 
-      // Automatically pause video if leaving video page
-      const videoEl = document.getElementById('romantic-video');
-      if (previousPage === 9 && videoEl && !videoEl.paused) {
-        videoEl.pause();
+      // Pause any active custom player before changing SPA pages.
+      if (window.videoExperience?.isVideoPlaying()) {
+        window.videoExperience.pauseAll({ resumeAudio: false });
+        if (targetPage === 6) {
+          videoMusicResumeState = null;
+          videoAudioHandoffId++;
+        } else {
+          resumeMusicAfterVideo();
+        }
       }
 
       // ALWAYS scroll window and all containers to top immediately
@@ -3805,6 +4231,7 @@ MANIKA ආදරෙන් 💌💞`,
         }
         currentPage = targetPage;
         updateStepIndicators(targetPage);
+        window.videoExperience?.activatePage(targetPage);
 
         // Audio Transition: entering Page 6 (Celebrate)
         // Ed Sheeran's song smoothly fades out and Birthday song (aud2) smoothly fades in!
@@ -3815,6 +4242,10 @@ MANIKA ආදරෙන් 💌💞`,
             fadeAudio(bgMusic, 0, 1000).then(() => {
               bgMusic.pause();
             });
+          }
+          if (birthdayMusic.networkState === HTMLMediaElement.NETWORK_EMPTY) {
+            birthdayMusic.preload = 'auto';
+            birthdayMusic.load();
           }
           birthdayMusic.currentTime = 0;
           birthdayMusic.volume = 0;
@@ -3926,12 +4357,14 @@ MANIKA ආදරෙන් 💌💞`,
         item.style.transitionDelay = `${Math.min(idx * 100, 400)}ms`;
         const media = [
           ...(m.image ? [`<img src="${m.image}" alt="${m.title}" loading="lazy">`] : []),
-          ...(m.videos || []).map((video, videoIndex) => `
+          ...(m.videoKeys || []).map((videoKey, videoIndex) => `
             <div class="milestone-video-frame">
-              <video class="muted-autoplay-video" controls muted playsinline preload="metadata" aria-label="${m.title} memory video ${videoIndex + 1}">
-                <source src="${video}" type="video/mp4">
-                Your browser does not support the video tag.
-              </video>
+              ${RomanticVideoExperience.createPlayerMarkup({
+                key: videoKey,
+                page: 3,
+                compact: true,
+                label: `${m.title} memory video ${videoIndex + 1}`
+              })}
             </div>
           `)
         ].join('');
@@ -3958,35 +4391,6 @@ MANIKA ආදරෙන් 💌💞`,
       });
     }, { threshold: 0.12 });
 
-    const autoPlayVideos = new Set();
-    const videoAutoplayObserver = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) autoPlayVideos.add(entry.target);
-        else autoPlayVideos.delete(entry.target);
-      });
-      const visibleVideo = [...autoPlayVideos].find(video => video.isConnected && video.closest('.page')?.classList.contains('active'));
-      document.querySelectorAll('.muted-autoplay-video, #romantic-video').forEach(video => {
-        if (video !== visibleVideo) video.pause();
-      });
-      if (visibleVideo) {
-        if (visibleVideo.id !== 'romantic-video' || visibleVideo.paused) {
-          visibleVideo.muted = true;
-        }
-        if (visibleVideo.paused) visibleVideo.play().catch(() => {});
-      }
-    }, { threshold: [0.5] });
-
-    document.querySelectorAll('.muted-autoplay-video, #romantic-video').forEach(video => {
-      video.muted = true;
-      video.defaultMuted = true;
-      videoAutoplayObserver.observe(video);
-      video.addEventListener('ended', () => {
-        autoPlayVideos.delete(video);
-        const nextVideo = [...autoPlayVideos].find(candidate => candidate.isConnected && candidate.closest('.page')?.classList.contains('active'));
-        if (nextVideo) nextVideo.play().catch(() => {});
-      });
-    });
-
     document.querySelectorAll('.memory-reveal').forEach(card => memoryRevealObserver.observe(card));
 
     /* ==========================================================================
@@ -4008,7 +4412,12 @@ MANIKA ආදරෙන් 💌💞`,
         const mediaGridClass = mediaItems.length === 1 ? 'single' : mediaItems.length >= 5 ? 'many many-six' : 'many';
         const mediaMarkup = mediaItems.map((media, mediaIndex) => {
           if (media.type === 'video') {
-            return `<video class="muted-autoplay-video" controls muted playsinline preload="metadata" aria-label="${photo.caption} memory video"><source src="${media.url}" type="video/mp4">Your browser does not support the video tag.</video>`;
+            return RomanticVideoExperience.createPlayerMarkup({
+              key: media.key,
+              page: 4,
+              compact: true,
+              label: `${photo.caption} memory video`
+            });
           }
           return `<img src="${media.url}" alt="${photo.caption}${mediaItems.length > 1 ? `, photo ${mediaIndex + 1}` : ''}" loading="lazy">`;
         }).join('');
@@ -4025,13 +4434,9 @@ MANIKA ආදරෙන් 💌💞`,
           const image = mediaItems.filter(item => item.type === 'image')[mediaIndex];
           img.addEventListener('click', () => openLightbox({ ...photo, url: image.url }));
         });
-        card.querySelectorAll('.muted-autoplay-video').forEach(video => {
-          video.muted = true;
-          video.defaultMuted = true;
-          videoAutoplayObserver.observe(video);
-        });
         memoryRevealObserver.observe(card);
       });
+      window.videoExperience?.refresh();
     }
     renderPolaroids();
 
@@ -4466,47 +4871,19 @@ MANIKA ආදරෙන් 💌💞`,
     }
 
     /* ==========================================================================
-       PAGE 9: VIDEO SECTION HELPER & AUTOMATIC AUDIO DUCKING
+       CLOUDINARY PLAYER, AUDIO HAND-OFF & PREDICTIVE PRELOADING
        ========================================================================== */
-    function initVideoAudioDucking() {
-      const videoEl = document.getElementById('romantic-video');
-      if (!videoEl) return;
-
-      // Start muted for browser autoplay, then turn sound on as soon as playback begins.
-      videoEl.addEventListener('playing', () => {
-        videoEl.muted = false;
-      });
-
-      // When the video starts playing:
-      // Automatically duck background music so video speech/sound is prominently highlighted!
-      videoEl.addEventListener('play', () => {
-        if (bgMusic && !bgMusic.paused) {
-          fadeAudio(bgMusic, 0.04, 700); // Fades down to a gentle whisper
-        }
-        if (birthdayMusic && !birthdayMusic.paused) {
-          fadeAudio(birthdayMusic, 0.04, 700);
+    function initVideoExperience() {
+      window.videoExperience = new RomanticVideoExperience.VideoExperience({
+        getActivePage: () => currentPage,
+        onPlaybackStart: (_video, media) => {
+          if (media?.key === 'livingMemories') pauseMusicForVideo();
+        },
+        onPlaybackStop: (_video, media) => {
+          if (media?.key === 'livingMemories') resumeMusicAfterVideo();
         }
       });
-
-      // When the video pauses:
-      // Smoothly restore background music back to romantic volume
-      videoEl.addEventListener('pause', () => {
-        if (currentPage !== 6 && bgMusic && !bgMusic.paused) {
-          fadeAudio(bgMusic, 0.75, 1100);
-        } else if (currentPage === 6 && birthdayMusic && !birthdayMusic.paused) {
-          fadeAudio(birthdayMusic, 0.75, 1100);
-        }
-      });
-
-      // When the video finishes playing:
-      // Smoothly restore background music back to full romantic volume
-      videoEl.addEventListener('ended', () => {
-        if (currentPage !== 6 && bgMusic && !bgMusic.paused) {
-          fadeAudio(bgMusic, 0.75, 1200);
-        } else if (currentPage === 6 && birthdayMusic && !birthdayMusic.paused) {
-          fadeAudio(birthdayMusic, 0.75, 1200);
-        }
-      });
+      window.videoExperience.activatePage(currentPage);
     }
 
     /* ==========================================================================
@@ -4575,13 +4952,14 @@ MANIKA ආදරෙන් 💌💞`,
       }
     }
 
-    // Initialize video ducking event listeners on page load
-    initVideoAudioDucking();
+    initVideoExperience();
     document.getElementById('journey-progress').style.display = 'flex';
     updateStepIndicators(currentPage);
 
-    if (sessionStorage.getItem('loveVaultJustUnlocked') === 'yes') {
+    if (sessionStorage.getItem('loveVaultJustUnlocked') === 'yes' ||
+        sessionStorage.getItem('loveVaultMusicIntent') === 'play') {
       sessionStorage.removeItem('loveVaultJustUnlocked');
+      sessionStorage.removeItem('loveVaultMusicIntent');
       soundEngine.playUnlockChime();
       startPerfectMusicWithFade(2200);
       if (typeof confetti === 'function') {
