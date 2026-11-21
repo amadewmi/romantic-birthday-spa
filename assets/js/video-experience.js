@@ -26,6 +26,9 @@
     const poster = media?.posterUrl ? ` poster="${escapeHtml(media.posterUrl)}"` : '';
     const stateClass = media?.configured ? '' : ' is-unconfigured';
     const compactClass = compact ? ' is-compact' : '';
+    const orientationClass = media?.orientation ? ` is-${media.orientation}` : '';
+    const aspectRatio = Number.isFinite(media?.aspectRatio) ? media.aspectRatio : (16 / 9);
+    const aspectStyle = ` style="--video-aspect: ${media?.width || 16} / ${media?.height || 9}; --video-ratio: ${aspectRatio.toFixed(6)}"`;
     const usesExclusiveAudio = key === EXCLUSIVE_AUDIO_KEY;
     const mutedAttribute = usesExclusiveAudio ? '' : ' muted';
     const muteButtonAttributes = usesExclusiveAudio
@@ -34,7 +37,7 @@
     const muteIcon = usesExclusiveAudio ? ICONS.volume : ICONS.muted;
 
     return `
-      <div class="luxury-video-player${stateClass}${compactClass}" data-luxury-video data-media-key="${escapeHtml(key)}" data-media-page="${Number(page || media?.page || 0)}" aria-label="${safeLabel}">
+      <div class="luxury-video-player${stateClass}${compactClass}${orientationClass}" data-luxury-video data-media-key="${escapeHtml(key)}" data-media-page="${Number(page || media?.page || 0)}" data-video-orientation="${media?.orientation || 'landscape'}" aria-label="${safeLabel}"${aspectStyle}>
         <video playsinline preload="none" aria-label="${safeLabel}"${poster}${mutedAttribute}></video>
         <div class="video-poster-shade" aria-hidden="true"></div>
         <button class="video-center-play" type="button" data-video-action="toggle" aria-label="Play ${safeLabel}"${media?.configured ? '' : ' disabled'}>
@@ -91,9 +94,14 @@
       this.backgroundLoading = false;
       this.loadedKeys = new Set();
       this.playingState = null;
+      this.autoplayCandidates = new Set();
       this.visibilityObserver = new IntersectionObserver(
         entries => this.handleVisibility(entries),
         { rootMargin: '320px 0px', threshold: [0, 0.12, 0.5] }
+      );
+      this.autoplayObserver = new IntersectionObserver(
+        entries => this.handleAutoplayVisibility(entries),
+        { rootMargin: '0px', threshold: [0, 0.45, 0.75] }
       );
       this.refresh();
     }
@@ -127,6 +135,8 @@
         predictivePlanned: false,
         playbackStarted: false,
         suppressStop: false,
+        autoplayCompleted: false,
+        visibilityRatio: 0,
         centerButton: player.querySelector('.video-center-play'),
         centerIcon: player.querySelector('.video-center-play-icon'),
         centerLabel: player.querySelector('.video-center-play-label'),
@@ -190,6 +200,7 @@
       this.updateTime(state);
       this.updateMuteButton(state);
       this.visibilityObserver.observe(player);
+      this.autoplayObserver.observe(player);
     }
 
     attachSource(state, priority = 'active') {
@@ -206,6 +217,7 @@
       if (!state.media.configured) return;
       this.attachSource(state, 'active');
       if (state.video.paused || state.video.ended) {
+        state.autoplayCompleted = false;
         this.pauseAll({ except: state.player, resumeAudio: false });
         this.setBuffering(state, state.video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA);
         try {
@@ -256,6 +268,8 @@
       state.controlToggle.innerHTML = ICONS.play;
       state.controlToggle.setAttribute('aria-label', `Play ${state.media.label}`);
       state.playbackStarted = false;
+      state.autoplayCompleted = true;
+      this.autoplayCandidates.delete(state);
       state.video.currentTime = 0;
       this.updateTime(state);
       if (this.playingState === state) this.playingState = null;
@@ -308,6 +322,50 @@
           this.waitForUsefulBuffer(state).then(() => this.planPredictiveLoads(state));
         }
       });
+    }
+
+    handleAutoplayVisibility(entries) {
+      entries.forEach(entry => {
+        const state = this.playerStates.get(entry.target);
+        if (!state || !state.media.configured) return;
+        state.visibilityRatio = entry.intersectionRatio;
+        const isActivePage = state.page === Number(this.getActivePage());
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.45 && isActivePage) {
+          this.autoplayCandidates.add(state);
+        } else {
+          this.autoplayCandidates.delete(state);
+          state.autoplayCompleted = false;
+        }
+      });
+      this.playMostVisibleCandidate();
+    }
+
+    playMostVisibleCandidate() {
+      const activePage = Number(this.getActivePage());
+      const candidate = [...this.autoplayCandidates]
+        .filter(state => state.player.isConnected && state.page === activePage && !state.autoplayCompleted)
+        .sort((a, b) => b.visibilityRatio - a.visibilityRatio)[0];
+
+      this.players.forEach(player => {
+        const state = this.playerStates.get(player);
+        if (!state || state === candidate || state.video.paused) return;
+        state.video.pause();
+      });
+
+      if (candidate && candidate.video.paused && !candidate.video.ended) {
+        this.startAutoplay(candidate);
+      }
+    }
+
+    async startAutoplay(state) {
+      this.attachSource(state, 'active');
+      if (!state.usesExclusiveAudio) state.video.muted = true;
+      this.setBuffering(state, state.video.readyState < HTMLMediaElement.HAVE_FUTURE_DATA);
+      try {
+        await state.video.play();
+      } catch {
+        this.setBuffering(state, false);
+      }
     }
 
     handleActiveBuffer(state) {
@@ -384,6 +442,7 @@
           .map(player => this.playerStates.get(player))
           .filter(state => state?.page === numericPage && state.player.isConnected)
           .sort((a, b) => a.player.getBoundingClientRect().top - b.player.getBoundingClientRect().top);
+        candidates.forEach(state => { state.autoplayCompleted = false; });
         const visible = candidates.find(state => {
           const rect = state.player.getBoundingClientRect();
           return rect.bottom >= 0 && rect.top <= globalScope.innerHeight + 220;
@@ -392,6 +451,16 @@
           this.attachSource(visible, 'active');
           this.waitForUsefulBuffer(visible).then(() => this.planPredictiveLoads(visible));
         }
+
+        this.autoplayCandidates.clear();
+        candidates.forEach(state => {
+          const rect = state.player.getBoundingClientRect();
+          const visibleHeight = Math.max(0, Math.min(rect.bottom, globalScope.innerHeight) - Math.max(rect.top, 0));
+          const ratio = rect.height > 0 ? visibleHeight / rect.height : 0;
+          state.visibilityRatio = ratio;
+          if (ratio >= 0.45) this.autoplayCandidates.add(state);
+        });
+        this.playMostVisibleCandidate();
       });
     }
 
@@ -407,6 +476,14 @@
 
     isVideoPlaying() {
       return Boolean(this.playingState && !this.playingState.video.paused && !this.playingState.video.ended);
+    }
+
+    isExclusiveVideoPlaying() {
+      return Boolean(
+        this.playingState?.usesExclusiveAudio &&
+        !this.playingState.video.paused &&
+        !this.playingState.video.ended
+      );
     }
   }
 

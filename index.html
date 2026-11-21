@@ -803,7 +803,7 @@
        7. PAGE 3: OUR STORY & MILESTONES (INTERACTIVE TIMELINE)
        ========================================================================== */
     .timeline-container {
-      max-width: 900px;
+      max-width: 1000px;
       width: 100%;
     }
 
@@ -871,6 +871,38 @@
       }
     }
 
+    .timeline-item.has-video {
+      left: 0 !important;
+      width: 100%;
+      padding: 0 50px;
+      text-align: center !important;
+    }
+
+    .timeline-item.has-video .timeline-card {
+      width: 100%;
+      margin-inline: auto;
+      background: rgba(28, 12, 22, 0.96);
+    }
+
+    .timeline-item.has-video.video-portrait .timeline-card {
+      max-width: 680px;
+    }
+
+    .timeline-item.has-video.video-landscape .timeline-card {
+      max-width: 920px;
+    }
+
+    @media (max-width: 768px) {
+      .timeline-item.has-video {
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+      }
+
+      .timeline-item.has-video .timeline-card {
+        padding: 14px;
+      }
+    }
+
     .timeline-dot {
       position: absolute;
       top: 24px;
@@ -891,10 +923,23 @@
       left: -10px;
     }
 
+    .timeline-item.has-video .timeline-dot {
+      top: -10px;
+      left: 50% !important;
+      right: auto !important;
+      transform: translateX(-50%);
+    }
+
     @media (max-width: 768px) {
       .timeline-dot {
         left: 14px !important;
         right: auto !important;
+      }
+
+      .timeline-item.has-video .timeline-dot {
+        top: -10px;
+        left: 50% !important;
+        transform: translateX(-50%);
       }
     }
 
@@ -966,18 +1011,17 @@
 
     .milestone-video-frame {
       width: 100%;
-      max-height: 70vh;
       border-radius: 12px;
       border: 1px solid rgba(212, 175, 55, 0.3);
       background: linear-gradient(145deg, #24131e, #090509);
       box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
     }
 
     .milestone-video-frame video {
       display: block;
       width: 100%;
       height: auto;
-      max-height: 70vh;
       aspect-ratio: auto;
       object-fit: contain;
       background: #090509;
@@ -2109,13 +2153,15 @@
       border-radius: 16px;
       overflow: hidden;
       background: #090509;
+      display: grid;
+      place-items: center;
     }
 
     .luxury-video-player {
       --video-progress: 0%;
       position: relative;
       width: 100%;
-      aspect-ratio: 16 / 9;
+      aspect-ratio: var(--video-aspect, 16 / 9);
       overflow: hidden;
       isolation: isolate;
       border: 1px solid rgba(247, 224, 137, 0.45);
@@ -2144,6 +2190,16 @@
       object-fit: contain;
       background: #090509;
       outline: none;
+    }
+
+    .video-player-wrapper .luxury-video-player.is-portrait {
+      width: min(100%, 560px);
+      margin-inline: auto;
+    }
+
+    .favorite-moment-card {
+      width: min(100%, 660px);
+      margin-inline: auto;
     }
 
     .video-poster-shade {
@@ -2367,10 +2423,19 @@
     .video-config-notice code { color: #fff8f0; }
 
     .milestone-video-frame .luxury-video-player {
-      max-height: 70vh;
       border: 0;
       border-radius: 11px;
       box-shadow: none;
+    }
+
+    .luxury-video-player.is-compact .video-control-bar {
+      grid-template-columns: auto minmax(72px, 1fr) auto auto;
+      gap: 7px;
+      padding-inline: 9px;
+    }
+
+    .luxury-video-player.is-compact .video-time {
+      display: none;
     }
 
     .polaroid-media-grid .luxury-video-player {
@@ -3909,7 +3974,7 @@ MANIKA ආදරෙන් 💌💞`,
       const activeAudio = (currentPage === 6) ? birthdayMusic : bgMusic;
       const trackName = (currentPage === 6) ? "Happy Birthday Song 🎂" : "Ed Sheeran - Perfect ♫";
 
-      if (window.videoExperience?.isVideoPlaying()) {
+      if (window.videoExperience?.isExclusiveVideoPlaying()) {
         if (!videoMusicResumeState) {
           videoMusicResumeState = { audio: activeAudio, shouldResume: false, targetVolume: 0.75 };
         }
@@ -3973,7 +4038,7 @@ MANIKA ආදරෙන් 💌💞`,
       musicWidget.classList.remove('playing');
       musicStatusText.textContent = 'Paused for your video ♫';
       fadeAudio(activeAudio, 0, 520).then(() => {
-        if (videoMusicResumeState?.id !== handoffId || !window.videoExperience?.isVideoPlaying()) return;
+        if (videoMusicResumeState?.id !== handoffId || !window.videoExperience?.isExclusiveVideoPlaying()) return;
         activeAudio.pause();
       });
     }
@@ -4353,7 +4418,16 @@ MANIKA ආදරෙන් 💌💞`,
 
       CONFIG.milestones.forEach((m, idx) => {
         const item = document.createElement('div');
-        item.className = 'timeline-item memory-reveal';
+        const milestoneVideoMedia = (m.videoKeys || [])
+          .map(videoKey => RomanticMedia.getMedia(videoKey))
+          .filter(Boolean);
+        const milestoneOrientation = milestoneVideoMedia[0]?.orientation || '';
+        item.className = [
+          'timeline-item',
+          'memory-reveal',
+          milestoneVideoMedia.length ? 'has-video' : '',
+          milestoneOrientation ? `video-${milestoneOrientation}` : ''
+        ].filter(Boolean).join(' ');
         item.style.transitionDelay = `${Math.min(idx * 100, 400)}ms`;
         const media = [
           ...(m.image ? [`<img src="${m.image}" alt="${m.title}" loading="lazy">`] : []),

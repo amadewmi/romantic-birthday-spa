@@ -17,42 +17,56 @@
     firstMeeting: {
       label: 'The Day We Met for the First Time',
       page: 3,
+      width: 1080,
+      height: 1825,
       cloudinaryUrl: 'https://res.cloudinary.com/cposxg1i/video/upload/v1795292425/1.Mp4.mp4',
       customPosterUrl: ''
     },
     secondMeeting: {
       label: 'Our Second Day Together',
       page: 3,
+      width: 1920,
+      height: 1080,
       cloudinaryUrl: 'https://res.cloudinary.com/cposxg1i/video/upload/v1795292542/2.Mp4.mp4',
       customPosterUrl: ''
     },
     beachDay: {
       label: 'Beach Day — Our Third Meeting',
       page: 3,
+      width: 1080,
+      height: 1918,
       cloudinaryUrl: 'https://res.cloudinary.com/cposxg1i/video/upload/v1795292534/3.Mp4.mp4',
       customPosterUrl: ''
     },
     fourthMeeting: {
       label: 'Our Fourth Day Together',
       page: 3,
+      width: 720,
+      height: 1279,
       cloudinaryUrl: 'https://res.cloudinary.com/cposxg1i/video/upload/v1795292273/5.Mp4.mp4',
       customPosterUrl: ''
     },
     heartStealer: {
       label: 'You Stole My Heart Again',
       page: 4,
+      width: 848,
+      height: 478,
       cloudinaryUrl: 'https://res.cloudinary.com/cposxg1i/video/upload/v1795292257/6.Mp4.mp4',
       customPosterUrl: ''
     },
     favoriteMoment: {
       label: 'My Favorite Beautiful Moment With You',
       page: 8,
+      width: 1080,
+      height: 1920,
       cloudinaryUrl: 'https://res.cloudinary.com/cposxg1i/video/upload/v1795292369/4.Mp4.mp4',
       customPosterUrl: ''
     },
     livingMemories: {
       label: 'Our Living Memories',
       page: 9,
+      width: 1280,
+      height: 723,
       cloudinaryUrl: 'https://res.cloudinary.com/cposxg1i/video/upload/v1795292896/Our-Video.Mp4.mp4',
       customPosterUrl: ''
     }
@@ -135,10 +149,16 @@
 
     const videoUrl = optimizeCloudinaryVideoUrl(entry.cloudinaryUrl);
     const customPosterUrl = normalizePosterOverride(entry.customPosterUrl);
+    const width = Number(entry.width) || 16;
+    const height = Number(entry.height) || 9;
     return Object.freeze({
       key,
       label: entry.label,
       page: entry.page,
+      width,
+      height,
+      aspectRatio: width / height,
+      orientation: height > width ? 'portrait' : 'landscape',
       configured: Boolean(videoUrl),
       videoUrl,
       posterUrl: customPosterUrl || deriveCloudinaryPosterUrl(entry.cloudinaryUrl)
