@@ -2,15 +2,16 @@
  * Cloudinary video configuration for the complete birthday journey.
  *
  * Paste each Cloudinary video delivery URL into the matching cloudinaryUrl
- * field below. The helpers in this file automatically add Cloudinary's
- * f_auto,q_auto delivery transformation and create a first-frame JPG poster.
+ * field below. The helpers in this file automatically add mobile-friendly
+ * Cloudinary delivery transformations and create a first-frame JPG poster.
  * A custom poster URL can be supplied when a hand-picked thumbnail is better.
  */
 (function configureRomanticMedia(globalScope) {
   'use strict';
 
   const VIDEO_TRANSFORM = 'f_auto,q_auto';
-  const POSTER_TRANSFORM = 'so_0,f_auto,q_auto';
+  const HLS_TRANSFORM = 'sp_auto:maxres_720p';
+  const POSTER_TRANSFORM = 'so_0/c_limit,w_960,h_960/q_auto:eco/f_auto';
   const CLOUDINARY_VIDEO_MARKER = '/video/upload/';
 
   const rawVideos = Object.freeze({
@@ -108,18 +109,29 @@
     const prefixEnd = markerIndex + CLOUDINARY_VIDEO_MARKER.length;
     const prefix = parsed.pathname.slice(0, prefixEnd);
     const remainder = parsed.pathname.slice(prefixEnd);
-    const firstSegment = remainder.split('/')[0] || '';
-    const requiredTokens = transform.split(',');
-    const alreadyPresent = requiredTokens.every(token =>
-      new RegExp(`(^|,)${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(,|$)`).test(firstSegment)
-    );
+    if (!remainder.startsWith(`${transform}/`)) {
+      parsed.pathname = `${prefix}${transform}/${remainder}`;
+    }
+    return parsed.toString();
+  }
 
-    if (!alreadyPresent) parsed.pathname = `${prefix}${transform}/${remainder}`;
+  function replaceDeliveryExtension(value, extension) {
+    if (!value) return '';
+    const parsed = new URL(value);
+    parsed.pathname = /\.[^./]+$/.test(parsed.pathname)
+      ? parsed.pathname.replace(/\.[^./]+$/, `.${extension}`)
+      : `${parsed.pathname}.${extension}`;
     return parsed.toString();
   }
 
   function optimizeCloudinaryVideoUrl(value) {
+    // Preserve the original upload geometry exactly. Some phone videos carry
+    // rotation metadata that Cloudinary's resize/crop transforms can flatten.
     return injectCloudinaryTransform(value, VIDEO_TRANSFORM);
+  }
+
+  function deriveCloudinaryHlsUrl(value) {
+    return replaceDeliveryExtension(injectCloudinaryTransform(value, HLS_TRANSFORM), 'm3u8');
   }
 
   function deriveCloudinaryPosterUrl(value) {
@@ -147,10 +159,13 @@
     const entry = rawVideos[key];
     if (!entry) return null;
 
-    const videoUrl = optimizeCloudinaryVideoUrl(entry.cloudinaryUrl);
-    const customPosterUrl = normalizePosterOverride(entry.customPosterUrl);
     const width = Number(entry.width) || 16;
     const height = Number(entry.height) || 9;
+    const videoUrl = optimizeCloudinaryVideoUrl(entry.cloudinaryUrl);
+    const customPosterUrl = normalizePosterOverride(entry.customPosterUrl);
+    const hlsUrl = key === 'livingMemories'
+      ? deriveCloudinaryHlsUrl(entry.cloudinaryUrl)
+      : '';
     return Object.freeze({
       key,
       label: entry.label,
@@ -161,6 +176,8 @@
       orientation: height > width ? 'portrait' : 'landscape',
       configured: Boolean(videoUrl),
       videoUrl,
+      fallbackVideoUrl: videoUrl,
+      hlsUrl,
       posterUrl: customPosterUrl || deriveCloudinaryPosterUrl(entry.cloudinaryUrl)
     });
   }
@@ -175,6 +192,7 @@
     mediaLibrary,
     getMedia,
     optimizeCloudinaryVideoUrl,
+    deriveCloudinaryHlsUrl,
     deriveCloudinaryPosterUrl
   });
 })(globalThis);

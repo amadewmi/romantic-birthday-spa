@@ -98,4 +98,15 @@
 - End-state verification: after the video ended, it reset to `0` and background music resumed with the `Perfect · Playing` state.
 - Leaving the page before playback also releases the pending handoff and restores music only when it had been playing previously.
 
+**Journey Navigation Alignment — Final Check**
+
+- Source visual truth: `C:\Users\PASIND~1\AppData\Local\Temp\codex-clipboard-b73ee77d-9b63-4e7a-9e7b-5aa254418d65.png`.
+- Implementation checked: local preview at `http://127.0.0.1:3000/`.
+- Viewport normalization: desktop preview was measured at 974px wide; mobile preview was measured at 390 × 844 CSS pixels.
+- Finding fixed: navigation rows were previously capped at 700px, which made the left and right actions drift inward on wider pages and vary by card width.
+- Resolution: paired journey controls now share the active page's outer rhythm, even when the preceding card is intentionally narrower. The multi-action Videos row keeps that same left/right rhythm in two balanced rows.
+- Desktop evidence: Story, Memories, Letter, and Celebrate all measured the same page and navigation edges: `20px` to `954px`. Their Back actions sit at the left edge and their forward actions end at the right edge.
+- Mobile evidence: Story, Memories, Letter, and Celebrate all measured `14px` to `376px`, with zero horizontal overflow. The rendered Memories view also confirms that the buttons remain legible, touch-friendly, and visually balanced below the content.
+- Scope check: existing typography, colors, cards, media, and page content were retained; only navigation-row geometry and small-screen control sizing changed.
+
 final result: passed

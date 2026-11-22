@@ -10,7 +10,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Great+Vibes&family=Dancing+Script:wght@500;700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Noto+Sans+Sinhala:wght@400;500;600;700&family=Noto+Serif+Sinhala:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="preload" href="assets/audio/aud1.mp3" as="audio" type="audio/mpeg" fetchpriority="high">
 
   <!-- Canvas Confetti CDN -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -614,6 +613,8 @@
     .page:not(.active):not(.fade-out) {
       max-height: 0;
       overflow: hidden;
+      content-visibility: hidden;
+      contain: layout style paint;
     }
 
     .page.active {
@@ -688,9 +689,47 @@
       justify-content: space-between;
       align-items: center;
       width: 100%;
-      max-width: 700px;
+      max-width: none;
+      margin-inline: auto;
       margin-top: 35px;
       gap: 16px;
+    }
+
+    .nav-buttons-edge {
+      justify-content: space-between !important;
+    }
+
+    /* Keep paired journey controls on one shared left/right rhythm, even when
+       the card above is intentionally narrower than the page. */
+    .nav-buttons-page-edge {
+      width: min(1000px, calc(100vw - 40px));
+      max-width: min(1000px, calc(100vw - 40px));
+      margin-left: 50%;
+      margin-right: 0;
+      transform: translateX(-50%);
+      align-self: flex-start;
+    }
+
+    @media (max-width: 600px) {
+      .nav-buttons-container {
+        gap: 10px;
+      }
+
+      .nav-buttons-page-edge {
+        width: calc(100vw - 28px);
+        max-width: calc(100vw - 28px);
+      }
+
+      .nav-buttons-container > .btn-romantic {
+        min-width: 0;
+        max-width: calc(50% - 5px);
+        padding-inline: 16px;
+        font-size: 0.8rem;
+      }
+
+      .nav-buttons-container > .btn-romantic span {
+        overflow-wrap: anywhere;
+      }
     }
 
     .btn-romantic {
@@ -3333,6 +3372,25 @@
       .story-start-button::after { animation: none; }
     }
 
+    /* Playback mode keeps every visual in place while freeing the mobile GPU
+       for smooth video decoding and compositing. */
+    @media (max-width: 960px) {
+      body.video-playback-mode .page.active * {
+        animation-play-state: paused !important;
+      }
+
+      body.video-playback-mode .video-buffering span {
+        animation-play-state: running !important;
+      }
+
+      body.video-playback-mode .header-bar,
+      body.video-playback-mode .luxury-video-player,
+      body.video-playback-mode .video-control-bar {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+      }
+    }
+
   </style>
 </head>
 <body class="awaiting-story-start">
@@ -3421,7 +3479,7 @@
   </header>
 
   <!-- Main Background Music (Ed Sheeran - Perfect with aud1 and fallback) -->
-  <audio id="bg-music" preload="auto">
+  <audio id="bg-music" preload="none">
     <source src="assets/audio/aud1.mp3" type="audio/mpeg">
   </audio>
 
@@ -3531,7 +3589,7 @@
           <!-- Populated dynamically via JS from CONFIG.milestones -->
         </div>
 
-        <div class="nav-buttons-container">
+        <div class="nav-buttons-container nav-buttons-page-edge">
           <button class="btn-romantic btn-outline" onclick="navigateToPage(2)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
@@ -3569,7 +3627,7 @@
           <!-- Populated dynamically from CONFIG.photos -->
         </div>
 
-        <div class="nav-buttons-container">
+        <div class="nav-buttons-container nav-buttons-page-edge">
           <button class="btn-romantic btn-outline" onclick="navigateToPage(3)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
@@ -3625,7 +3683,7 @@
           </button>
         </div>
 
-        <div class="nav-buttons-container">
+        <div class="nav-buttons-container nav-buttons-page-edge">
           <button class="btn-romantic btn-outline" onclick="navigateToPage(4)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
@@ -3775,7 +3833,7 @@
           </div>
         </div>
 
-        <div class="nav-buttons-container" style="margin-top: 40px;">
+        <div class="nav-buttons-container nav-buttons-page-edge" style="margin-top: 40px;">
           <button class="btn-romantic btn-outline" onclick="navigateToPage(5)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
@@ -3870,7 +3928,7 @@
           </div>
         </div>
 
-        <div class="nav-buttons-container" style="margin-top: 32px; justify-content: center; gap: 14px; flex-wrap: wrap;">
+        <div class="nav-buttons-container nav-buttons-edge nav-buttons-page-edge" style="margin-top: 32px; gap: 14px; flex-wrap: wrap;">
           <button class="btn-romantic btn-outline" onclick="navigateToPage(7)">
             <span>Back to Quiz</span>
           </button>
@@ -3902,7 +3960,7 @@
           </div>
         </div>
 
-        <div class="nav-buttons-container" style="margin-top: 35px; justify-content: center; gap: 16px; flex-wrap: wrap;">
+        <div class="nav-buttons-container nav-buttons-edge nav-buttons-page-edge" style="margin-top: 35px; gap: 16px;">
           <button class="btn-romantic btn-outline" onclick="navigateToPage(8)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
@@ -3914,12 +3972,6 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
             </svg>
-          </button>
-          <button class="btn-romantic btn-gold" onclick="navigateToPage(2)">
-            <span>Relive From Start 🔄</span>
-          </button>
-          <button class="btn-romantic btn-outline" onclick="navigateToPage(5)">
-            <span>Read Letter Again 💌</span>
           </button>
         </div>
       </div>
@@ -4193,22 +4245,22 @@ MANIKA ආදරෙන් 💌💞`,
         {
           id: 1,
           question: "අපි දෙන්නා මුලින්ම ආදරෙයි කියලා කියාගත්ත ඒ ලස්සන දවස මතකද? 🗓️💕",
-          options: ["2026.08.10", "2026.07.10", "2026.08.24", "2026.09.01"],
-          correct: 0,
+          options: ["2026.07.10", "2026.08.10", "2026.08.24", "2026.09.01"],
+          correct: 1,
           explanation: "හරියටම හරි මගේ පණ! ඒ තමයි අපේ මුළු ජීවිතේම වෙනස් කරපු ලස්සනම දවස... 🥰✨"
         },
         {
           id: 2,
           question: "මම ඔයාට ආදරෙන් කතා කරන, ඔයාගෙ මං ආසම නම මොකක්ද? 🙈❤️",
-          options: ["Shaalu / My Love", "Baban", "Sudu Mahaththaya", "Chooti"],
-          correct: 0,
+          options: ["Baban", "Sudu Mahaththaya", "Chooti", "Shaalu / My Love"],
+          correct: 3,
           explanation: "Yes my Shaalu! ඔයා මගේ එකම ආදරේ... මගේ My Love! 💍💖"
         },
         {
           id: 3,
           question: "මං ඔයා එක්ක යන්න වැඩිපුරම ආස තැන මොකක්ද? 🌊💑",
-          options: ["Beach", "Mountains", "Cinema", "Shopping mall"],
-          correct: 0,
+          options: ["Mountains", "Cinema", "Beach", "Shopping mall"],
+          correct: 2,
           explanation: "ඔව් සුදූ, ඔයා එක්ක beach එකට යන එක තමයි මං වැඩිපුරම ආස! 🌊❤️"
         },
         {
@@ -4222,12 +4274,12 @@ MANIKA ආදරෙන් 💌💞`,
           id: 5,
           question: "මම කැමතිම පාට මොකක්ද? 🎨💜",
           options: [
-            "Purple",
             "Pink",
+            "Purple",
             "Red",
             "Blue"
           ],
-          correct: 0,
+          correct: 1,
           explanation: "හරිම හරි! මං ආසම පාට purple තමයි. 💜✨"
         }
       ]
@@ -4388,8 +4440,7 @@ MANIKA ආදරෙන් 💌💞`,
        BACKGROUND MUSIC CONTROLLER (SMOOTH FADE-IN / FADE-OUT & DUAL ENGINE)
        ========================================================================== */
     let bgMusic = document.getElementById('bg-music');
-    let bgMusicLoop = bgMusic.cloneNode(true);
-    bgMusicLoop.removeAttribute('id');
+    let bgMusicLoop = new Audio();
     bgMusicLoop.hidden = true;
     bgMusicLoop.volume = 0;
     bgMusicLoop.preload = 'none';
@@ -4403,6 +4454,7 @@ MANIKA ආදරෙන් 💌💞`,
     let hasPerfectStarted = false;
     const fadeTimers = new Map();
     const bgLoopCrossfadeMs = 3400;
+    const bgLoopPrimeLeadSeconds = Math.max(12, (bgLoopCrossfadeMs / 1000) + 6);
     let bgLoopTransition = null;
     let bgLoopPreparing = false;
     let bgLoopRequestId = 0;
@@ -4412,13 +4464,10 @@ MANIKA ආදරෙන් 💌💞`,
     function primeBackgroundLoopBuffer() {
       if (bgLoopBufferPrimed) return;
       bgLoopBufferPrimed = true;
+      if (!bgMusicLoop.src) bgMusicLoop.src = CONFIG.musicUrl || 'assets/audio/aud1.mp3';
       bgMusicLoop.preload = 'auto';
       bgMusicLoop.load();
     }
-
-    bgMusic.addEventListener('canplaythrough', primeBackgroundLoopBuffer, { once: true });
-    bgMusic.preload = 'auto';
-    bgMusic.load();
 
     function settleBgLoopTransition() {
       bgLoopRequestId++;
@@ -4541,6 +4590,9 @@ MANIKA ආදරෙන් 💌💞`,
       audioEl.addEventListener('timeupdate', () => {
         if (audioEl !== bgMusic || audioEl.paused || !Number.isFinite(audioEl.duration) || audioEl.duration <= 0) return;
         const loopEnd = Math.min(audioEl.duration, CONFIG.perfectEndTime || audioEl.duration);
+        if (loopEnd - audioEl.currentTime <= bgLoopPrimeLeadSeconds) {
+          primeBackgroundLoopBuffer();
+        }
         if (loopEnd - audioEl.currentTime <= bgLoopCrossfadeMs / 1000 && !fadeTimers.has(audioEl)) {
           startBgLoopCrossfade(audioEl);
         }
@@ -4583,7 +4635,6 @@ MANIKA ආදරෙන් 💌💞`,
     } = {}) {
       soundEngine.init();
       settleBgLoopTransition();
-      if (bgMusic.networkState === HTMLMediaElement.NETWORK_EMPTY) bgMusic.load();
       const safeStart = Math.max(0, Number(startAt) || 0);
       const shouldSeek = setPerfectStartPosition(safeStart, forceStart);
       bgMusic.volume = 0;
@@ -4595,7 +4646,6 @@ MANIKA ආදරෙන් 💌💞`,
         }
         musicPreference = 'playing';
         setMusicUIPlaying(true, "Perfect · Playing");
-        primeBackgroundLoopBuffer();
         return fadeAudio(bgMusic, 0.75, fadeDuration).then(() => true);
       }).catch(err => {
         console.warn("HTML5 audio playback notice:", err);
@@ -4754,10 +4804,21 @@ MANIKA ආදරෙන් 💌💞`,
     let particles = [];
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
+    let particleAnimationFrame = 0;
+    let particleResizeFrame = 0;
+    let particleAnimationPaused = false;
 
     window.addEventListener('resize', () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      cancelAnimationFrame(particleResizeFrame);
+      particleResizeFrame = requestAnimationFrame(() => {
+        const nextWidth = window.innerWidth;
+        const nextHeight = window.innerHeight;
+        width = nextWidth;
+        height = nextHeight;
+        canvas.width = nextWidth;
+        canvas.height = nextHeight;
+        if (particleAnimationPaused) drawParticles(false);
+      });
     });
 
     class Particle {
@@ -4840,14 +4901,33 @@ MANIKA ආදරෙන් 💌💞`,
       particles.push(new Particle());
     }
 
-    function animateParticles() {
+    function drawParticles(advance = true) {
       ctx.clearRect(0, 0, width, height);
       particles.forEach(p => {
-        p.update();
+        if (advance) p.update();
         p.draw();
       });
-      requestAnimationFrame(animateParticles);
     }
+
+    function animateParticles() {
+      if (particleAnimationPaused) return;
+      drawParticles(true);
+      particleAnimationFrame = requestAnimationFrame(animateParticles);
+    }
+
+    window.setRomanticParticlesPaused = paused => {
+      const shouldPause = Boolean(paused);
+      if (particleAnimationPaused === shouldPause) return;
+      particleAnimationPaused = shouldPause;
+      if (shouldPause) {
+        cancelAnimationFrame(particleAnimationFrame);
+        particleAnimationFrame = 0;
+        drawParticles(false);
+      } else {
+        particleAnimationFrame = requestAnimationFrame(animateParticles);
+      }
+    };
+
     animateParticles();
 
     /* ==========================================================================
@@ -4979,7 +5059,7 @@ MANIKA ආදරෙන් 💌💞`,
 
       // Pause any active custom player before changing SPA pages.
       if (window.videoExperience?.isVideoPlaying()) {
-        window.videoExperience.pauseAll({ resumeAudio: false });
+        window.videoExperience.pauseAll({ release: true });
         if (targetPage === 6) {
           videoMusicResumeState = null;
           videoAudioHandoffId++;
@@ -5763,15 +5843,22 @@ MANIKA ආදරෙන් 💌💞`,
     }
 
     /* ==========================================================================
-       CLOUDINARY PLAYER, AUDIO HAND-OFF & PREDICTIVE PRELOADING
+       CLOUDINARY PLAYER, AUDIO HAND-OFF & PLAYBACK PERFORMANCE MODE
        ========================================================================== */
+    function setVideoPlaybackMode(active) {
+      document.body.classList.toggle('video-playback-mode', Boolean(active));
+      window.setRomanticParticlesPaused?.(Boolean(active));
+    }
+
     function initVideoExperience() {
       window.videoExperience = new RomanticVideoExperience.VideoExperience({
         getActivePage: () => currentPage,
         onPlaybackStart: (_video, media) => {
+          setVideoPlaybackMode(true);
           if (media?.key === 'livingMemories') pauseMusicForVideo();
         },
         onPlaybackStop: (_video, media) => {
+          setVideoPlaybackMode(false);
           if (media?.key === 'livingMemories') resumeMusicAfterVideo();
         }
       });
