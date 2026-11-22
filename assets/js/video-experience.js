@@ -594,20 +594,23 @@
         return;
       }
 
-      // Keep the current memory stable while it is still meaningfully visible.
-      // This prevents adjacent timeline cards from repeatedly replacing one
-      // another during responsive layout/scroll settling.
+      // Keep the current memory stable only while it is about as visible as
+      // the candidate. A tall portrait clip can remain partly onscreen while
+      // the next (landscape) memory is fully visible; it must not prevent the
+      // newly focused card from starting automatically.
       if (this.playingState && this.playingState !== candidate &&
           this.playingState.page === activePage &&
           !this.playingState.video.paused &&
-          this.playingState.visibilityRatio >= 0.2) {
+          this.playingState.visibilityRatio >= 0.2 &&
+          this.playingState.visibilityRatio + 0.12 >= candidate.visibilityRatio) {
         return;
       }
       const pendingState = [...this.players]
         .map(player => this.playerStates.get(player))
         .find(state => state?.requestedPlayback && state.sourceAttached);
       if (pendingState && pendingState !== candidate &&
-          pendingState.page === activePage && pendingState.visibilityRatio >= 0.2) {
+          pendingState.page === activePage && pendingState.visibilityRatio >= 0.2 &&
+          pendingState.visibilityRatio + 0.12 >= candidate.visibilityRatio) {
         return;
       }
       this.releaseInactiveSources(candidate);
