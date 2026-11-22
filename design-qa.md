@@ -109,4 +109,32 @@
 - Mobile evidence: Story, Memories, Letter, and Celebrate all measured `14px` to `376px`, with zero horizontal overflow. The rendered Memories view also confirms that the buttons remain legible, touch-friendly, and visually balanced below the content.
 - Scope check: existing typography, colors, cards, media, and page content were retained; only navigation-row geometry and small-screen control sizing changed.
 
+**Desktop Celebration Controls and Living Memories — Final Check**
+
+- Source visual truth:
+  - Desktop navigation issue: `C:\Users\PASIND~1\AppData\Local\Temp\codex-clipboard-ffb3f55e-c063-47ec-9da1-a3f27cb3eb23.png` (877 × 687 pixels).
+  - Desired video/card geometry: `C:\Users\PASIND~1\AppData\Local\Temp\codex-clipboard-eab741df-ca07-4526-b133-859e6cac7afe.png` (949 × 669 pixels).
+- Browser-rendered implementation:
+  - Celebration controls: `C:\Users\PASINDU KAUSHALYA\.codex\visualizations\2026\11\21\01a1ff7f-0dc6-7ce2-8637-aedfae11434c\final-contained-celebration-controls.png` at 1008px desktop width.
+  - Living Memories full view: `C:\Users\PASINDU KAUSHALYA\.codex\visualizations\2026\11\21\01a1ff7f-0dc6-7ce2-8637-aedfae11434c\final-stable-living-memories.png` at 1008px desktop width.
+  - Side-by-side evidence: `final-celebration-controls-comparison.png` and `final-video-geometry-comparison.png` in the same visualization directory.
+- Earlier P1: the Page 6 Back and Next actions inherited page-edge positioning inside a narrower desktop card, clipping both controls. Fix: desktop Page 6 now uses the card's full inner width without the page-edge transform. Final measurement: card 820px wide, navigation row 728px wide, with equal 46px left/right inner margins. Mobile retains its existing edge-aligned layout and has zero horizontal overflow.
+- Earlier P1: the Page 9 video slot shrink-wrapped before media metadata arrived, producing a narrow player with black side space for several seconds. Fix: the slot is full width from first paint and the exclusive video keeps its configured 1280:723 geometry instead of changing after delayed stream metadata. Final desktop measurement: 810 × 458px; final mobile measurement: 336 × 190px. Geometry remained stable after 4.5 seconds.
+- Earlier P1: background music was paused when Page 9 opened, before the video genuinely started. Fix: the handoff now begins only on the media `playing` event. Background music continued from 37.97s to 39.06s during page entry/loading, faded down over 900ms after playback began, and paused only while the video was active.
+- End-state verification: pausing or ending the video immediately releases the handoff; background music starts from volume 0 and fades back to the saved target over 950ms. The exclusive video resets to 0 after ending. Repeated `playing` events do not overwrite the original resume state.
+- Typography, colors, copy, media assets, borders, particles, and card styling remain unchanged. The update is limited to desktop navigation containment, first-paint media geometry, and audio transition timing.
+- Primary interactions checked: Page 6 navigation, Page 9 entry, autoplay, buffering-to-playing handoff, pause, end, desktop resize, mobile resize, and horizontal overflow.
+- No actionable P0, P1, or P2 issue remains.
+
+**Story Chapter Thumbnails and Fourth Day Start — Final Check**
+
+- Source visual truth: user attachments `codex-clipboard-5ff076c1-d64b-4707-987c-68a4d5c09633.png`, `codex-clipboard-6a6c8a36-c97a-48de-9533-a10230537fc4.png`, `codex-clipboard-f173044e-720a-4147-b379-1cea3c8d7e98.png`, plus the marked Fourth Day reference `codex-clipboard-d54907a9-144f-46f4-a871-5657f261e28e.png`.
+- Browser-rendered evidence: `C:\Users\PASINDU KAUSHALYA\.codex\visualizations\2026\11\21\01a1ff7f-0dc6-7ce2-8637-aedfae11434c\final-story-thumbnail-comparison.png`; individual desktop captures `chapter-01-thumbnail.png` through `chapter-04-thumbnail.png`; mobile capture `final-fourth-day-mobile.png`.
+- Viewports: desktop 1280 × 720 CSS pixels at DPR 1; mobile 390 × 844 CSS pixels at DPR 1. Source images were center-cropped only inside the existing 4:3 Polaroid slots; no page geometry was changed.
+- Earlier P1: Chapters 1 and 3 used black first-frame posters and Chapter 2 used an unclear poster. Fix: the three supplied photos now occupy the primary Polaroid thumbnail slots with the existing secondary photos, borders, filters, captions, and animations retained.
+- Earlier P1: Fourth Day showed the unwanted opening frame and began at 0 seconds. Fix: its poster and Chapter 4 primary thumbnail use the clean 2-second Cloudinary frame, while autoplay, manual play, replay, and a seek-to-start all clamp to 2.0 seconds. Browser evidence: seek-to-start produced media time `2.0s`; replay advanced from `2.0s` to `3.04s`; the player displays the trimmed timeline as `0:00 / 0:18`.
+- Fonts/typography, spacing/rhythm, burgundy/gold color tokens, captions/copy, animations, timeline cards, and mobile layout remain unchanged. Supplied photos were optimized from about 3.9MB combined to about 460KB combined without visible thumbnail degradation.
+- Mobile: desktop-only vignette decorations remain hidden as designed; the Fourth Day player retains zero horizontal overflow. Console errors: 0.
+- Full-view and focused comparison found no remaining actionable P0, P1, or P2 mismatch.
+
 final result: passed

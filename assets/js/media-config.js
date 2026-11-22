@@ -45,7 +45,8 @@
       width: 720,
       height: 1279,
       cloudinaryUrl: 'https://res.cloudinary.com/cposxg1i/video/upload/v1795292273/5.Mp4.mp4',
-      customPosterUrl: ''
+      startTime: 2,
+      customPosterUrl: 'https://res.cloudinary.com/cposxg1i/video/upload/so_2/c_limit,w_960,h_960/q_auto:eco/f_auto/v1795292273/5.Mp4.jpg'
     },
     heartStealer: {
       label: 'You Stole My Heart Again',
@@ -172,6 +173,7 @@
       page: entry.page,
       width,
       height,
+      startTime: Math.max(0, Number(entry.startTime) || 0),
       aspectRatio: width / height,
       orientation: height > width ? 'portrait' : 'landscape',
       configured: Boolean(videoUrl),

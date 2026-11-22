@@ -710,6 +710,16 @@
       align-self: flex-start;
     }
 
+    @media (min-width: 601px) {
+      #page-6 .nav-buttons-page-edge {
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
+        transform: none;
+        align-self: stretch;
+      }
+    }
+
     @media (max-width: 600px) {
       .nav-buttons-container {
         gap: 10px;
@@ -2526,6 +2536,11 @@
       place-items: center;
     }
 
+    .video-player-wrapper > div {
+      width: 100%;
+      min-width: 0;
+    }
+
     .luxury-video-player {
       --video-progress: 0%;
       position: relative;
@@ -4119,6 +4134,7 @@
           date: "August 21, 2026",
           title: "The Day We Met for the First Time",
           whisper: "The beginning that changed everything.",
+          vignetteImage: "assets/images/chapter-01-vignette.jpg",
           accentImage: "assets/images/3.jpg.jpg",
           desc: "ඒ පළමු හමුවීමේ පුංචි හිනාවත්, හිතට දැනුණු අමුතුම සතුටත් අදටත් මතකයි. ඒ දවසෙන් පටන්ගත්ත අපේ ලස්සන කතාවේ පළමු පිටුව මෙන්න. 💕",
           videoKeys: ["firstMeeting"]
@@ -4127,6 +4143,7 @@
           date: "September 18, 2026",
           title: "Our Second Day Together",
           whisper: "A little closer, a lot more us.",
+          vignetteImage: "assets/images/chapter-02-vignette.jpg",
           accentImage: "assets/images/10.jpg.jpg",
           desc: "දෙවැනි හමුවීමේදී අපි අතර තිබුණු හුරුපුරුදුකම තවත් ලස්සන වුණා. ඔයා ළඟ ගත කළ ඒ මොහොත, තවත් හමුවීම් ගොඩකට හිත ආස කළා. 🌷",
           videoKeys: ["secondMeeting"]
@@ -4135,6 +4152,7 @@
           date: "October 08, 2026",
           title: "Beach Day — Our Third Meeting",
           whisper: "Salt air, soft smiles, forever ours.",
+          vignetteImage: "assets/images/chapter-03-vignette.jpg",
           accentImage: "assets/images/8.jpg.jpg",
           desc: "මුහුදු හුළඟ, රළ හඬ, ඒ හැමදේටම වඩා ඔයා එක්ක ගත කළ වෙලාව… අපේ තුන්වැනි හමුවීම හිතේ සදාකාලිකවම රැඳුණු beach day එකක්. 🌊☀️",
           videoKeys: ["beachDay"]
@@ -4724,13 +4742,13 @@ MANIKA ආදරෙන් 💌💞`,
 
     let videoAudioHandoffId = 0;
 
-    function pauseMusicForVideo({ pendingPlayback = false } = {}) {
+    function pauseMusicForVideo() {
       settleBgLoopTransition();
       const activeAudio = currentPage === 6 ? birthdayMusic : bgMusic;
 
-      // Entering the exclusive-video page can happen before the browser allows
-      // unmuted playback. Preserve the original resume state instead of
-      // overwriting it when the later `play` event arrives.
+      // The handoff begins only after the exclusive video is genuinely playing.
+      // Preserve the original resume state if the browser emits another playing
+      // event after a short buffer.
       if (videoMusicResumeState?.audio === activeAudio) return;
 
       const shouldResume = isMusicPlaying && activeAudio && !activeAudio.paused;
@@ -4745,12 +4763,13 @@ MANIKA ආදරෙන් 💌💞`,
       if (!shouldResume) return;
       musicWidget.classList.remove('playing');
       musicWidget.setAttribute('aria-pressed', 'false');
-      musicStatusText.textContent = 'Paused for video';
-      fadeAudio(activeAudio, 0, pendingPlayback ? 240 : 520).then(() => {
+      musicStatusText.textContent = 'Fading for video';
+      fadeAudio(activeAudio, 0, 900).then(() => {
         if (videoMusicResumeState?.id !== handoffId) return;
         const videoIsActive = window.videoExperience?.isExclusiveVideoPlaying();
-        if (!videoIsActive && (!pendingPlayback || currentPage !== 9)) return;
+        if (!videoIsActive) return;
         activeAudio.pause();
+        musicStatusText.textContent = 'Paused for video';
       });
     }
 
@@ -5099,7 +5118,6 @@ MANIKA ආදරෙන් 💌💞`,
         }
         currentPage = targetPage;
         updateStepIndicators(targetPage);
-        if (targetPage === 9) pauseMusicForVideo({ pendingPlayback: true });
         window.videoExperience?.activatePage(targetPage);
 
         // Audio Transition: entering Page 6 (Celebrate)
@@ -5307,7 +5325,7 @@ MANIKA ආදරෙන් 💌💞`,
           .map(videoKey => RomanticMedia.getMedia(videoKey))
           .filter(Boolean);
         const milestoneOrientation = milestoneVideoMedia[0]?.orientation || '';
-        const vignettePrimary = milestoneVideoMedia[0]?.posterUrl || m.image || '';
+        const vignettePrimary = m.vignetteImage || milestoneVideoMedia[0]?.posterUrl || m.image || '';
         const vignetteSecondary = m.accentImage || m.image || vignettePrimary;
         item.className = [
           'timeline-item',

@@ -161,7 +161,8 @@
         playbackStarted: false,
         autoplayCompleted: false,
         visibilityRatio: 0,
-        resumeTime: 0,
+        startTime: Math.max(0, Number(media.startTime) || 0),
+        resumeTime: Math.max(0, Number(media.startTime) || 0),
         releaseTimer: null,
         centerButton: player.querySelector('.video-center-play'),
         centerIcon: player.querySelector('.video-center-play-icon'),
@@ -193,13 +194,14 @@
       });
       state.seek?.addEventListener('input', event => {
         if (!Number.isFinite(video.duration) || video.duration <= 0) return;
-        video.currentTime = (Number(event.target.value) / 1000) * video.duration;
+        const playableDuration = Math.max(0, video.duration - state.startTime);
+        video.currentTime = state.startTime + ((Number(event.target.value) / 1000) * playableDuration);
         state.resumeTime = video.currentTime;
         this.updateTime(state);
       });
 
       video.addEventListener('play', () => this.handlePlay(state));
-      video.addEventListener('playing', () => this.setBuffering(state, false));
+      video.addEventListener('playing', () => this.handlePlaying(state));
       video.addEventListener('pause', () => this.handlePause(state));
       video.addEventListener('ended', () => this.handleEnded(state));
       video.addEventListener('timeupdate', () => {
@@ -230,13 +232,42 @@
     }
 
     restoreResumeTime(state) {
-      if (!Number.isFinite(state.resumeTime) || state.resumeTime <= 0 || !Number.isFinite(state.video.duration)) return;
-      try { state.video.currentTime = Math.min(state.resumeTime, Math.max(0, state.video.duration - 0.2)); } catch (_) {}
+      if (!Number.isFinite(state.video.duration)) return;
+      const resumeTime = Math.max(state.startTime, Number(state.resumeTime) || state.startTime);
+      try { state.video.currentTime = Math.min(resumeTime, Math.max(state.startTime, state.video.duration - 0.2)); } catch (_) {}
+    }
+
+    waitForStartPosition(state) {
+      if (state.startTime <= 0) return Promise.resolve();
+      if (Number.isFinite(state.video.duration)) {
+        this.restoreResumeTime(state);
+        return Promise.resolve();
+      }
+
+      return new Promise(resolve => {
+        let settled = false;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          globalScope.clearTimeout(timer);
+          state.video.removeEventListener('loadedmetadata', ready);
+          resolve();
+        };
+        const ready = () => {
+          this.restoreResumeTime(state);
+          finish();
+        };
+        const timer = globalScope.setTimeout(finish, 4000);
+        state.video.addEventListener('loadedmetadata', ready, { once: true });
+      });
     }
 
     syncPlayerGeometry(state) {
-      const width = Number(state?.video.videoWidth);
-      const height = Number(state?.video.videoHeight);
+      const configuredWidth = Number(state?.media.width);
+      const configuredHeight = Number(state?.media.height);
+      const keepConfiguredGeometry = state?.key === EXCLUSIVE_AUDIO_KEY && configuredWidth && configuredHeight;
+      const width = keepConfiguredGeometry ? configuredWidth : Number(state?.video.videoWidth);
+      const height = keepConfiguredGeometry ? configuredHeight : Number(state?.video.videoHeight);
       if (!width || !height) return;
 
       const aspectRatio = width / height;
@@ -459,6 +490,7 @@
       this.setBuffering(state, true);
       try {
         await this.attachSource(state, 'play');
+        await this.waitForStartPosition(state);
         state.hls?.startLoad(state.resumeTime || -1);
         await state.video.play();
       } catch (error) {
@@ -472,13 +504,18 @@
       state.requestedPlayback = true;
       state.hls?.startLoad(state.resumeTime || -1);
       if (!state.usesExclusiveAudio) state.video.muted = true;
-      state.playbackStarted = true;
       this.playingState = state;
       state.player.classList.add('is-playing');
       state.centerIcon.innerHTML = ICONS.pause;
       state.centerLabel.textContent = 'Pause memory';
       state.controlToggle.innerHTML = ICONS.pause;
       state.controlToggle.setAttribute('aria-label', `Pause ${state.media.label}`);
+    }
+
+    handlePlaying(state) {
+      this.setBuffering(state, false);
+      if (state.playbackStarted) return;
+      state.playbackStarted = true;
       this.onPlaybackStart(state.video, state.media);
     }
 
@@ -491,10 +528,10 @@
       state.centerLabel.textContent = 'Play memory';
       state.controlToggle.innerHTML = ICONS.play;
       state.controlToggle.setAttribute('aria-label', `Play ${state.media.label}`);
-      if (!state.playbackStarted) return;
+      const wasPlaybackStarted = state.playbackStarted;
       state.playbackStarted = false;
       if (this.playingState === state) this.playingState = null;
-      this.onPlaybackStop(state.video, state.media, 'pause');
+      if (wasPlaybackStarted) this.onPlaybackStop(state.video, state.media, 'pause');
     }
 
     handleEnded(state) {
@@ -506,8 +543,8 @@
       state.controlToggle.setAttribute('aria-label', `Play ${state.media.label}`);
       state.playbackStarted = false;
       state.autoplayCompleted = true;
-      state.resumeTime = 0;
-      state.video.currentTime = 0;
+      state.resumeTime = state.startTime;
+      state.video.currentTime = state.startTime;
       this.updateTime(state);
       if (this.playingState === state) this.playingState = null;
       this.onPlaybackStop(state.video, state.media, 'ended');
@@ -527,10 +564,12 @@
 
     updateTime(state) {
       const duration = Number.isFinite(state.video.duration) ? state.video.duration : 0;
-      const progress = duration > 0 ? Math.min(100, Math.max(0, (state.video.currentTime / duration) * 100)) : 0;
+      const playableDuration = Math.max(0, duration - state.startTime);
+      const playableTime = Math.max(0, state.video.currentTime - state.startTime);
+      const progress = playableDuration > 0 ? Math.min(100, Math.max(0, (playableTime / playableDuration) * 100)) : 0;
       if (state.seek) state.seek.value = String(Math.round(progress * 10));
       state.player.style.setProperty('--video-progress', `${progress}%`);
-      if (state.time) state.time.textContent = `${formatTime(state.video.currentTime)} / ${formatTime(duration)}`;
+      if (state.time) state.time.textContent = `${formatTime(playableTime)} / ${formatTime(playableDuration)}`;
     }
 
     updateMuteButton(state) {
@@ -624,6 +663,7 @@
       this.setBuffering(state, true);
       try {
         await this.attachSource(state, 'autoplay');
+        await this.waitForStartPosition(state);
         if (state.visibilityRatio < 0.45 || state.page !== Number(this.getActivePage())) return;
         state.hls?.startLoad(state.resumeTime || -1);
         await state.video.play();
