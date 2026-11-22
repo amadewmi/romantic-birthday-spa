@@ -142,9 +142,6 @@
     form.addEventListener('submit', async event => {
       event.preventDefault();
       if (!selectedColor || !selectedDate) return;
-      // Carry the user's explicit click/Enter playback intent across the
-      // authenticated navigation so the main page can start music immediately.
-      sessionStorage.setItem('loveVaultMusicIntent', 'play');
       submitButton.disabled = true;
       hintButton.disabled = true;
       message.textContent = 'Opening our little world…';
@@ -160,7 +157,6 @@
         sessionStorage.setItem('loveVaultJustUnlocked', 'yes');
         window.location.replace('/');
       } catch (error) {
-        sessionStorage.removeItem('loveVaultMusicIntent');
         message.textContent = error.message === 'Failed to fetch'
           ? 'The private entrance is not ready yet. Please try again in a moment.'
           : error.message;

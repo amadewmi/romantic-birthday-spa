@@ -365,6 +365,9 @@
         await state.video.play();
       } catch {
         this.setBuffering(state, false);
+        if (state.usesExclusiveAudio) {
+          state.centerLabel.textContent = 'Tap to play with sound';
+        }
       }
     }
 

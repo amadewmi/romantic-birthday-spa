@@ -3078,20 +3078,264 @@
       }
     }
 
-    /* Unlocking Animation on Page 1 Vault */
-    .lock-box.unlocking {
-      animation: unlockGlowFade 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    /* Our Story opening scene */
+    body.awaiting-story-start {
+      height: 100svh;
+      overflow: hidden;
     }
 
-    @keyframes unlockGlowFade {
-      0% { transform: scale(1); box-shadow: var(--shadow-luxury); }
-      40% { transform: scale(1.03); box-shadow: 0 0 45px rgba(212, 175, 55, 0.7), 0 0 70px rgba(255, 117, 143, 0.5); border-color: var(--accent-gold); }
-      100% { transform: scale(0.96) translateY(-20px); opacity: 0; }
+    .header-bar {
+      transition: opacity 500ms ease, transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .awaiting-story-start .header-bar {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-18px);
+    }
+
+    .awaiting-story-start .app-container {
+      min-height: 100svh;
+      padding: 28px 20px;
+      align-items: center;
+    }
+
+    .story-start-page {
+      isolation: isolate;
+      min-height: min(760px, calc(100svh - 56px));
+      justify-content: center;
+    }
+
+    .story-start-card {
+      max-width: 760px;
+      min-height: min(620px, calc(100svh - 56px));
+      padding: clamp(30px, 6vw, 62px) clamp(24px, 7vw, 74px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background:
+        radial-gradient(circle at 50% 25%, rgba(201, 24, 74, 0.18), transparent 38%),
+        linear-gradient(145deg, rgba(41, 10, 30, 0.88), rgba(18, 8, 13, 0.9));
+      border-color: rgba(247, 224, 137, 0.4);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.62), 0 0 55px rgba(212, 175, 55, 0.1);
+    }
+
+    .story-start-card::after {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(255, 204, 213, 0.09);
+      border-radius: 18px;
+      pointer-events: none;
+    }
+
+    .story-start-emblem {
+      position: relative;
+      width: clamp(118px, 18vw, 154px);
+      aspect-ratio: 1;
+      margin-bottom: 24px;
+      display: grid;
+      place-items: center;
+    }
+
+    .story-start-orbit,
+    .story-start-orbit::before {
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(212, 175, 55, 0.38);
+      border-radius: 50%;
+      content: '';
+    }
+
+    .story-start-orbit {
+      animation: storyOrbit 13s linear infinite;
+    }
+
+    .story-start-orbit::before {
+      inset: 13px;
+      border-color: rgba(255, 179, 193, 0.25);
+      animation: storyOrbit 8s linear infinite reverse;
+    }
+
+    .story-start-orbit i,
+    .story-start-orbit::after {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--accent-gold-light);
+      box-shadow: 0 0 15px var(--accent-gold), 0 0 28px rgba(212, 175, 55, 0.7);
+    }
+
+    .story-start-orbit i {
+      top: 9px;
+      left: 25px;
+    }
+
+    .story-start-orbit::after {
+      content: '';
+      right: 5px;
+      bottom: 30px;
+      background: var(--rose-pink);
+      box-shadow: 0 0 15px var(--rose-deep), 0 0 26px rgba(255, 117, 143, 0.62);
+    }
+
+    .story-start-heart {
+      width: 70px;
+      height: 70px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--rose-pink);
+      background: radial-gradient(circle, rgba(89, 13, 34, 0.95), rgba(28, 12, 22, 0.88));
+      border: 1px solid rgba(247, 224, 137, 0.55);
+      box-shadow: 0 0 30px rgba(201, 24, 74, 0.38), inset 0 0 20px rgba(255, 179, 193, 0.1);
+      animation: storyHeartbeat 2.4s ease-in-out infinite;
+    }
+
+    .story-start-heart svg {
+      width: 34px;
+      filter: drop-shadow(0 0 8px rgba(255, 117, 143, 0.75));
+    }
+
+    .story-start-kicker {
+      margin-bottom: 10px;
+      color: var(--accent-gold-light);
+      font-size: clamp(0.63rem, 1.8vw, 0.76rem);
+      font-weight: 600;
+      letter-spacing: clamp(3px, 0.8vw, 6px);
+      text-transform: uppercase;
+    }
+
+    .story-start-title {
+      max-width: 620px;
+      font-size: clamp(2.45rem, 7.2vw, 5rem);
+      line-height: 1.04;
+      text-wrap: balance;
+    }
+
+    .story-start-quote {
+      max-width: 580px;
+      margin: 18px auto 24px;
+      color: var(--rose-blush);
+      font-size: clamp(1.45rem, 3.5vw, 2.15rem);
+      line-height: 1.35;
+      text-wrap: balance;
+      text-shadow: 0 0 20px rgba(255, 117, 143, 0.18);
+    }
+
+    .story-start-date {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 28px;
+      padding: 7px 15px;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      border-radius: 999px;
+      background: rgba(18, 8, 13, 0.46);
+    }
+
+    .story-start-date::before,
+    .story-start-date::after {
+      content: '✦';
+      color: var(--accent-gold);
+    }
+
+    .story-start-button {
+      min-width: min(100%, 270px);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 34px rgba(212, 175, 55, 0.23);
+    }
+
+    .story-start-button::after {
+      content: '';
+      position: absolute;
+      top: -70%;
+      left: -35%;
+      width: 30%;
+      height: 240%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+      transform: rotate(22deg);
+      animation: storyButtonShine 3.8s ease-in-out infinite;
+    }
+
+    .story-start-button:disabled {
+      cursor: wait;
+      opacity: 0.85;
+    }
+
+    .story-start-sound-note {
+      margin-top: 14px;
+      color: rgba(224, 207, 214, 0.72);
+      font-size: 0.68rem;
+      letter-spacing: 0.8px;
+    }
+
+    .story-is-opening .story-start-card {
+      animation: storyDoorOpen 850ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes storyOrbit {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes storyHeartbeat {
+      0%, 100% { transform: scale(1); }
+      12% { transform: scale(1.08); }
+      24% { transform: scale(1); }
+      36% { transform: scale(1.05); }
+    }
+
+    @keyframes storyButtonShine {
+      0%, 58% { transform: translateX(-220%) rotate(22deg); }
+      82%, 100% { transform: translateX(560%) rotate(22deg); }
+    }
+
+    @keyframes storyDoorOpen {
+      0% { opacity: 1; transform: scale(1); filter: blur(0); }
+      55% { opacity: 1; transform: scale(1.025); }
+      100% { opacity: 0; transform: scale(1.08); filter: blur(6px); }
+    }
+
+    @media (max-width: 600px) {
+      .awaiting-story-start .app-container { padding: 14px; }
+      .story-start-page { min-height: calc(100svh - 28px); }
+      .story-start-card {
+        min-height: calc(100svh - 28px);
+        padding: 26px 22px;
+        border-radius: 22px;
+      }
+      .story-start-emblem { margin-bottom: 18px; }
+      .story-start-quote { margin-block: 14px 20px; }
+      .story-start-date { margin-bottom: 22px; }
+    }
+
+    @media (max-height: 690px) {
+      .story-start-card { padding-block: 18px; }
+      .story-start-emblem { width: 104px; margin-bottom: 12px; }
+      .story-start-heart { width: 60px; height: 60px; }
+      .story-start-heart svg { width: 29px; }
+      .story-start-quote { margin-block: 10px 14px; }
+      .story-start-date { margin-bottom: 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .story-start-orbit,
+      .story-start-orbit::before,
+      .story-start-heart,
+      .story-start-button::after { animation: none; }
     }
 
   </style>
 </head>
-<body>
+<body class="awaiting-story-start">
 
   <!-- ==========================================================================
        BACKGROUND PARTICLES CANVAS (ROSE PETALS & FLOATING GLOWING HEARTS)
@@ -3192,12 +3436,36 @@
   <main class="app-container">
 
     <!-- ========================================================================
-         PAGE 1: Server-side login is provided separately in login.html.
+         PAGE 1: OUR STORY OPENING SCENE (after the server-side Love Vault)
          ======================================================================== -->
+    <section class="page active story-start-page" id="page-1" aria-labelledby="story-start-title">
+      <div class="glass-card story-start-card">
+        <div class="story-start-emblem" aria-hidden="true">
+          <span class="story-start-orbit"><i></i></span>
+          <span class="story-start-heart">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </span>
+        </div>
+        <p class="story-start-kicker font-cinzel">A Love Story, Written By Us</p>
+        <h1 class="story-start-title font-serif gold-gradient-text" id="story-start-title">Our Story Begins Here</h1>
+        <p class="story-start-quote font-script">“Every heartbeat brought us to this moment. Now, let our memories begin again.”</p>
+        <span class="story-start-date font-cinzel">Since August 10, 2026</span>
+        <button class="btn-romantic btn-gold story-start-button" id="begin-story-btn" type="button">
+          <span id="begin-story-label">Begin Our Story</span>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+        <p class="story-start-sound-note">Your touch begins the music and opens our little world ✨</p>
+      </div>
+    </section>
+
     <!-- ========================================================================
          PAGE 2: WELCOME & BIRTHDAY COUNTDOWN / PROLOGUE
          ======================================================================== -->
-    <section class="page active" id="page-2">
+    <section class="page" id="page-2">
       <div class="glass-card prologue-card">
         <span class="greeting-tag font-cinzel">A Birthday Dedication</span>
         <h1 class="prologue-title font-serif gold-gradient-text" id="welcome-title">
@@ -4294,31 +4562,35 @@ MANIKA ආදරෙන් 💌💞`,
     watchBgMusicLoop(bgMusic);
     watchBgMusicLoop(bgMusicLoop);
 
-    function setPerfectStartPosition() {
-      if (hasPerfectStarted) return;
-      const startAt = CONFIG.perfectStartTime || 52;
+    function setPerfectStartPosition(startAt = CONFIG.perfectStartTime || 52, forceStart = false) {
+      if (hasPerfectStarted && !forceStart) return false;
+      const safeStart = Math.max(0, Number(startAt) || 0);
       const applyStartPosition = () => {
-        if (hasPerfectStarted) return;
-        try { bgMusic.currentTime = startAt; } catch (_) { return; }
-        perfectLastPos = startAt;
+        if (hasPerfectStarted && !forceStart) return;
+        try { bgMusic.currentTime = safeStart; } catch (_) { return; }
+        perfectLastPos = safeStart;
         hasPerfectStarted = true;
       };
 
       if (bgMusic.readyState >= HTMLMediaElement.HAVE_METADATA) applyStartPosition();
       else bgMusic.addEventListener('loadedmetadata', applyStartPosition, { once: true });
+      return true;
     }
 
-    function startPerfectMusicWithFade(fadeDuration = 700) {
+    function startPerfectMusicWithFade(fadeDuration = 700, {
+      startAt = CONFIG.perfectStartTime || 52,
+      forceStart = false
+    } = {}) {
       soundEngine.init();
       settleBgLoopTransition();
       if (bgMusic.networkState === HTMLMediaElement.NETWORK_EMPTY) bgMusic.load();
-      setPerfectStartPosition();
+      const safeStart = Math.max(0, Number(startAt) || 0);
+      const shouldSeek = setPerfectStartPosition(safeStart, forceStart);
       bgMusic.volume = 0;
       return bgMusic.play().then(() => {
-        const startAt = CONFIG.perfectStartTime || 52;
-        if (!hasPerfectStarted || bgMusic.currentTime < startAt - 1) {
-          try { bgMusic.currentTime = startAt; } catch (_) {}
-          perfectLastPos = startAt;
+        if (shouldSeek) {
+          try { bgMusic.currentTime = safeStart; } catch (_) {}
+          perfectLastPos = safeStart;
           hasPerfectStarted = true;
         }
         musicPreference = 'playing';
@@ -4402,9 +4674,15 @@ MANIKA ආදරෙන් 💌💞`,
 
     let videoAudioHandoffId = 0;
 
-    function pauseMusicForVideo() {
+    function pauseMusicForVideo({ pendingPlayback = false } = {}) {
       settleBgLoopTransition();
       const activeAudio = currentPage === 6 ? birthdayMusic : bgMusic;
+
+      // Entering the exclusive-video page can happen before the browser allows
+      // unmuted playback. Preserve the original resume state instead of
+      // overwriting it when the later `play` event arrives.
+      if (videoMusicResumeState?.audio === activeAudio) return;
+
       const shouldResume = isMusicPlaying && activeAudio && !activeAudio.paused;
       const handoffId = ++videoAudioHandoffId;
       videoMusicResumeState = {
@@ -4416,9 +4694,12 @@ MANIKA ආදරෙන් 💌💞`,
 
       if (!shouldResume) return;
       musicWidget.classList.remove('playing');
+      musicWidget.setAttribute('aria-pressed', 'false');
       musicStatusText.textContent = 'Paused for video';
-      fadeAudio(activeAudio, 0, 520).then(() => {
-        if (videoMusicResumeState?.id !== handoffId || !window.videoExperience?.isExclusiveVideoPlaying()) return;
+      fadeAudio(activeAudio, 0, pendingPlayback ? 240 : 520).then(() => {
+        if (videoMusicResumeState?.id !== handoffId) return;
+        const videoIsActive = window.videoExperience?.isExclusiveVideoPlaying();
+        if (!videoIsActive && (!pendingPlayback || currentPage !== 9)) return;
         activeAudio.pause();
       });
     }
@@ -4447,6 +4728,7 @@ MANIKA ආදරෙන් 💌💞`,
 
     function startMusicFromFirstInteraction(event) {
       if (musicPreference !== 'auto' || isMusicPlaying) return;
+      if (currentPage === 1 || currentPage === 9) return;
       const target = event.target instanceof Element ? event.target : null;
       if (target?.closest('#music-widget')) return;
       if (target?.closest('[data-media-key="livingMemories"]')) return;
@@ -4632,9 +4914,46 @@ MANIKA ආදරෙන් 💌💞`,
     /* ==========================================================================
        PAGE NAVIGATION & TRANSITION CONTROLLER
        ========================================================================== */
-    let currentPage = 2;
+    let currentPage = 1;
     let isUnlocked = true;
     let quizCompleted = false;
+
+    const beginStoryButton = document.getElementById('begin-story-btn');
+    const beginStoryLabel = document.getElementById('begin-story-label');
+
+    function beginOurStory() {
+      if (!beginStoryButton || beginStoryButton.disabled) return;
+
+      beginStoryButton.disabled = true;
+      beginStoryLabel.textContent = 'Opening Our Memories…';
+      document.body.classList.add('story-is-opening');
+
+      // This call must stay directly inside the trusted button click. It is what
+      // lets mobile browsers begin audible playback at the real start of the song.
+      musicPreference = 'playing';
+      startPerfectMusicWithFade(1000, { startAt: 0, forceStart: true }).then(started => {
+        if (!started) musicPreference = 'auto';
+      });
+      soundEngine.playUnlockChime();
+
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 64,
+          spread: 72,
+          startVelocity: 24,
+          origin: { y: 0.64 },
+          colors: ['#d4af37', '#f7e089', '#ffccd5', '#ff758f']
+        });
+      }
+
+      setTimeout(() => {
+        document.body.classList.remove('awaiting-story-start', 'story-is-opening');
+        document.getElementById('journey-progress').style.display = 'flex';
+        navigateToPage(2);
+      }, 720);
+    }
+
+    beginStoryButton?.addEventListener('click', beginOurStory);
 
     function navigateToPage(targetPage) {
       if (targetPage > 1 && !isUnlocked) {
@@ -4667,6 +4986,10 @@ MANIKA ආදරෙන් 💌💞`,
         } else {
           resumeMusicAfterVideo();
         }
+      } else if (previousPage === 9 && targetPage !== 9 && videoMusicResumeState) {
+        // Autoplay with sound may still be waiting for a browser gesture.
+        // Leaving the page must release that pending audio handoff as well.
+        resumeMusicAfterVideo();
       }
 
       // ALWAYS scroll window and all containers to top immediately
@@ -4696,6 +5019,7 @@ MANIKA ආදරෙන් 💌💞`,
         }
         currentPage = targetPage;
         updateStepIndicators(targetPage);
+        if (targetPage === 9) pauseMusicForVideo({ pendingPlayback: true });
         window.videoExperience?.activatePage(targetPage);
 
         // Audio Transition: entering Page 6 (Celebrate)
@@ -4736,7 +5060,7 @@ MANIKA ආදරෙන් 💌💞`,
           }
           const loopStart = CONFIG.perfectStartTime || 52;
           const loopEnd = CONFIG.perfectEndTime || bgMusic.duration;
-          bgMusic.currentTime = perfectLastPos >= loopStart && perfectLastPos < loopEnd
+          bgMusic.currentTime = perfectLastPos >= 0 && perfectLastPos < loopEnd
             ? perfectLastPos
             : loopStart;
           bgMusic.volume = 0;
@@ -5521,19 +5845,10 @@ MANIKA ආදරෙන් 💌💞`,
     }
 
     initVideoExperience();
-    document.getElementById('journey-progress').style.display = 'flex';
     updateStepIndicators(currentPage);
 
-    if (sessionStorage.getItem('loveVaultJustUnlocked') === 'yes' ||
-        sessionStorage.getItem('loveVaultMusicIntent') === 'play') {
-      sessionStorage.removeItem('loveVaultJustUnlocked');
-      sessionStorage.removeItem('loveVaultMusicIntent');
-      soundEngine.playUnlockChime();
-      startPerfectMusicWithFade(2200);
-      if (typeof confetti === 'function') {
-        confetti({ particleCount: 55, spread: 65, origin: { y: 0.6 }, colors: ['#d4af37', '#ffccd5', '#ffffff', '#ff758f'] });
-      }
-    }
+    sessionStorage.removeItem('loveVaultJustUnlocked');
+    sessionStorage.removeItem('loveVaultMusicIntent');
 
     // Keyboard ESC to close modals
     window.addEventListener('keydown', (e) => {
